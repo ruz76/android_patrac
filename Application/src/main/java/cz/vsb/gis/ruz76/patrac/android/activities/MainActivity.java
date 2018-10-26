@@ -32,6 +32,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.view.menu.ActionMenuItemView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -65,6 +66,9 @@ import cz.vsb.gis.ruz76.patrac.android.helpers.Notificator;
  * Main Activity.
  */
 public class MainActivity extends Activity implements LocationListener, GetRequestUpdate {
+
+    private Menu menu;
+
     public static String sessionId = null;
     public static String searchid;
     public static String endPoint;
@@ -166,6 +170,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        this.menu = menu;
         return true;
     }
 
@@ -286,6 +291,9 @@ public class MainActivity extends Activity implements LocationListener, GetReque
             case SELECTED:
                 processSelectedResponse(result);
                 break;
+            case READY_FOR_TRACKING:
+                processTrackingResponse(result);
+                break;
             case TRACKING:
                 processTrackingResponse(result);
                 break;
@@ -297,11 +305,12 @@ public class MainActivity extends Activity implements LocationListener, GetReque
 
     /**
      * Reads results from server in mode tracking.
-     * There can be three four.
+     * There can be several options.
      * ID, M, P and null.
      * ID - we have obtained session identifier from the server.
      * M - we have obtained message from server.
      * P - we have obtained information that position was saved.
+     * ! - we have been released from duty
      * null - some error occured
      *
      * @param result result to process
@@ -320,9 +329,11 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                 // We do not check it, it should be OK.
                 sendPositionCount = loggedPositionCount;
                 setInfo();
+            } else if (result.startsWith("!")) {
+                goToSleep();
             }
         } else {
-            //The response is empty
+            //The response is null
             errorsCount++;
             DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
             Date date = new Date();
@@ -358,6 +369,16 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                     // starts new timer with more often check
                     setCallOnDutyTimer();
                 }
+                if (result.startsWith("!")) {
+                    // we are in sleeping mode, but server does not know
+                    String id = sharedPrefs.getString("id", null);
+                    if (id != null) {
+                        sendGetRequest(endPoint + "operation=changestatus&status_to=sleeping&id=" + id);
+                    }
+                }
+            }
+            if (result.isEmpty()) {
+                goToSleep();
             }
         }
     }
@@ -434,12 +455,24 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         timerCallOnDuty.schedule(myCallOnDutyTask, 0, 1000 * 5);
     }
 
+    private void goToSleep() {
+        String id = sharedPrefs.getString("id", null);
+        if (id != null) {
+            sendGetRequest(endPoint + "operation=changestatus&status_to=sleeping&id=" + id);
+            disconnect();
+            menu.findItem(R.id.connect_disconnect_action).setTitle(R.string.connect);
+        }
+    }
+
     /**
      * Checks new search.
      */
     private void checkSearches() {
         String id = sharedPrefs.getString("id", null);
-        if (id != null && RequestMode.SLEEPING == mode) {
+        if (id != null
+                && (RequestMode.SLEEPING == mode
+                || RequestMode.READY_FOR_TRACKING == mode
+                || RequestMode.TRACKING == mode)) {
             sendGetRequest(endPoint + "operation=searches&id=" + id);
         }
     }
@@ -508,6 +541,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         callOnDuty = null;
         mode = RequestMode.SLEEPING;
         mStatusText.setText(R.string.mode_sleeping);
+        mDataText.setText("");
     }
 
     /**
@@ -515,9 +549,10 @@ public class MainActivity extends Activity implements LocationListener, GetReque
      */
     private void getSessionId() {
         //Maybe put phone number instead of NN and random
+        String systemid = sharedPrefs.getString("id", null);
         String user_name = sharedPrefs.getString("user_name", "NN " + Math.round(Math.random() * 10000));
         try {
-            sendGetRequest(endPoint + "operation=getid&searchid=" + searchid + "&user_name=" + URLEncoder.encode(user_name, "UTF-8") + "&lat=" + getShortCoord(lat) + "&lon=" + getShortCoord(lon));
+            sendGetRequest(endPoint + "operation=getid&searchid=" + searchid + "&user_name=" + URLEncoder.encode(user_name, "UTF-8") + "&systemid=" + systemid + "&lat=" + getShortCoord(lat) + "&lon=" + getShortCoord(lon));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
