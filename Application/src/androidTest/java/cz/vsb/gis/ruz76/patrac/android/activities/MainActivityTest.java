@@ -232,5 +232,6 @@ public class MainActivityTest {
         //Expected result: App should not Crash but put some error message
         onView(withText("Poslední pozice pátračů")).perform(click());
         Thread.sleep(10000);
+        //test
     }
 }
