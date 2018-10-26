@@ -25,7 +25,8 @@
             tools:layout_editor_absoluteX="12dp"
             tools:layout_editor_absoluteY="12dp"></ListView>
 
-        <org.osmdroid.views.MapView android:id="@+id/map"
+        <org.osmdroid.views.MapView
+            android:id="@+id/map"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" />
 

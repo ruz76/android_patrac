@@ -98,6 +98,7 @@ public class MessageViewActivity extends Activity {
         return false;
     }
 
+    // Do it more better
     //TODO do it better, probably other types can be sent as well
     private String getType(String filename) {
         String parts[] = filename.split("\\.");
