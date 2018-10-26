@@ -1,6 +1,28 @@
 <?php
 
 require('config.php');
+require('point_location.php');
+require('kraje/extents.php');
+
+function pointInRegion($regionId, $point) {
+    $region_coords_string = file_get_contents("kraje/".$regionId.".coords");
+    $region_coords = explode(",", $region_coords_string);
+    //print_r($region_coords);
+    $pointLocation2 = new pointLocation();
+    $result = $pointLocation2->pointInPolygon($point, $region_coords);    
+    return $result;
+}
+
+function getRegion($kraje, $lon, $lat) {
+    foreach ($kraje as $value){
+        if ($lon>=$value[1] && $lon<=$value[2] && $lat>=$value[3] && $lat<=$value[4]) { 
+            if (pointInRegion($value[0], $lon." ".$lat) == "inside") {
+                return $value[0];
+            }
+        }
+    }
+    return "OUT";
+}
 
 function uploadFile($id) {
 
@@ -69,6 +91,43 @@ function checkLatLon($lat, $lon) {
     }
 }
 
+function getAllUsers() {
+    checkSystemId(); 
+    $SQL = "SELECT DISTINCT id FROM locations";
+	$res = mysql_query($SQL) or die(mysql_error());
+    while ($row = mysql_fetch_array($res)) { 
+      $SQL2 = "SELECT id, lat, lon, dt_created FROM locations WHERE id = '".$row["id"]."' ORDER BY dt_created DESC LIMIT 1";
+      $res2 = mysql_query($SQL2) or die(mysql_error());
+	  $row2 = mysql_fetch_array($res2);
+	  $SQL3 = "SELECT user_name FROM users WHERE id = '".$row["id"]."'";
+	  $res3 = mysql_query($SQL3) or die(mysql_error());
+	  $row3 = mysql_fetch_array($res3);
+	  $timestamp = time()+date("Z");
+	  $utc_timestamp = gmdate("Y/m/d H:i:s",$timestamp);
+	  $diff =  strtotime($utc_timestamp) - strtotime($row2["dt_created"]);
+	  if ($diff > 300) {
+	    echo $row["id"].";".$row2["dt_created"].";D;".$row3["user_name"].";".$row2["lon"]." ".$row2["lat"].";".$diff."\n"; 
+	  } else {
+	    echo $row["id"].";".$row2["dt_created"].";A;".$row3["user_name"].";".$row2["lon"]." ".$row2["lat"].";".$diff."\n";
+	  }
+	}   
+}
+
+function createNewSearch() {
+    checkSystemId(); 
+	if (!ctype_alnum($_REQUEST["searchid"])) die();
+    $SQL = "INSERT INTO searches (searchid, description, status, region) 
+        VALUES ('".$_REQUEST["searchid"]."', '".$_REQUEST["description"]."', 'confirmed', '".$_REQUEST["region"]."')";
+	mysql_query($SQL) or die(mysql_error());
+}
+
+function closeSearch() {
+    checkSystemId(); 
+	if (!ctype_alnum($_REQUEST["searchid"])) die();
+    $SQL = "UPDATE searches SET status = 'closed' WHERE searchid = '".$_REQUEST["searchid"]."'";
+	mysql_query($SQL) or die(mysql_error());
+}
+
 function processOperationBasedOnSearchId() {
     if (!isset($_REQUEST["searchid"])) die();
 	if ($_REQUEST["searchid"] == '') die();
@@ -93,7 +152,11 @@ function processOperationBasedOnSearchId() {
 	            mysql_query($SQL) or die(mysql_error());
 	        }
 	        mkdir("/var/local/patrac/".$id."/", 0777);
-	        break;
+            if (isset($_REQUEST["systemid"]) && preg_match ('/[a-zA-Z0-9]/', $_REQUEST["systemid"])) {
+                $SQL = "UPDATE system_users SET searchid = '".$_REQUEST["searchid"]."', status = 'onduty' WHERE id = '".$_REQUEST["systemid"]."'";
+                mysql_query($SQL) or die(mysql_error());        
+            }	        
+            break;
 	    
 	    case "sendlocation":
 	        if (checkLatLon($_REQUEST["lat"], $_REQUEST["lon"])) {
@@ -301,15 +364,22 @@ function processOperationBasedOnSearchId() {
 //file_put_contents("/tmp/mserver_debug.txt", file_get_contents("php://input"));
 //echo "OK";
 
-mysql_connect($_HOSTNAME, $_USERNAME, $_PASSWORD) or die(mysql_error());;
-mysql_select_db($_DBNAME) or die(mysql_error());
-
-if (!isset($_REQUEST["operation"])) die();
-if ($_REQUEST["operation"] == "searches") {
+function checkSystemId() {
+    if (!preg_match ('/[a-zA-Z0-9]/', $_REQUEST["id"])) {
+        die();    
+    }
     $SQL = "SELECT id, status FROM system_users WHERE id = '".$_REQUEST["id"]."'";
     $res = mysql_query($SQL) or die(mysql_error()); 
     $row = mysql_fetch_array($res);
     if ($row["id"] != $_REQUEST["id"]) die();
+}
+
+function getSearches() {
+    checkSystemId();
+
+    $SQL = "SELECT id, status FROM system_users WHERE id = '".$_REQUEST["id"]."'";
+    $res = mysql_query($SQL) or die(mysql_error()); 
+    $row = mysql_fetch_array($res);
 
     /*
         status
@@ -342,6 +412,10 @@ if ($_REQUEST["operation"] == "searches") {
         } 
     }
 
+    if ($row["status"] == "released") {
+        echo "!";
+    }
+
     if ($row["status"] == "callonduty") {
         // sends the list of searches
         $SQL = "SELECT searchid, description FROM searches WHERE status = 'confirmed'";
@@ -350,23 +424,69 @@ if ($_REQUEST["operation"] == "searches") {
             echo $row["searchid"].";".$row["description"]."\n";
         } 
     }
-    
-} else {
-    if ($_REQUEST["operation"] == "changestatus") {
-            $SQL = "SELECT id, status FROM system_users WHERE id = '".$_REQUEST["id"]."'";
-            $res = mysql_query($SQL) or die(mysql_error()); 
-            $row = mysql_fetch_array($res);
-            if ($row["id"] != $_REQUEST["id"]) die();
-            // TODO do it based on search area
-            if (isset($_REQUEST["status_from"])) {
-                $SQL = "UPDATE system_users SET status = '".$_REQUEST["status_to"]."' WHERE status = '".$_REQUEST["status_from"]."'";
-            } else {
-                $SQL = "UPDATE system_users SET status = '".$_REQUEST["status_to"]."'";
-            }
-            mysql_query($SQL) or die(mysql_error()); 
-    } else {
-        processOperationBasedOnSearchId();
+}
+
+function getSystemUsers($kraje) {
+    checkSystemId();
+    $SQL = "SELECT * FROM system_users";
+    $res = mysql_query($SQL) or die(mysql_error()); 
+    while ($row = mysql_fetch_array($res)) {
+        $region = getRegion($kraje, $row["lon"], $row["lat"]);
+        echo $row["sysid"].";".$row["user_name"].";".$row["status"].";".$row["searchid"].";".$region."\n";
     }
+}
+
+function areItemsNumbers($array) {
+    return ctype_digit(implode('',$array));
+}
+
+function changeStatus() {
+    checkSystemId();      
+    $items = explode(";", $_REQUEST["ids"]);
+    if (areItemsNumbers($items)) {
+      // TODO do it based on ids
+      if (isset($_REQUEST["status_from"])) {
+          $SQL = "UPDATE system_users SET status = '".$_REQUEST["status_to"]."' WHERE status = '".$_REQUEST["status_from"]."'";
+      } else {
+          $SQL = "UPDATE system_users SET status = '".$_REQUEST["status_to"]."'";
+      }
+      $SQL .= " WHERE sysid IN (".implode(',',$items).")";
+      echo $SQL;  
+      mysql_query($SQL) or die(mysql_error()); 
+    } else {
+      $SQL = "UPDATE system_users SET status = '".$_REQUEST["status_to"]."'";
+      $SQL .= " WHERE id = '".$_REQUEST["id"]."'";
+      echo $SQL;  
+      mysql_query($SQL) or die(mysql_error()); 
+    }
+}
+
+mysql_connect($_HOSTNAME, $_USERNAME, $_PASSWORD) or die(mysql_error());;
+mysql_select_db($_DBNAME) or die(mysql_error());
+
+if (!isset($_REQUEST["operation"])) die();
+switch ($_REQUEST["operation"]) {
+    case "searches":
+        getSearches();
+        break;
+    case "changestatus":
+        changeStatus();
+        break;
+    case "getsystemusers":
+        getSystemUsers($kraje);
+        break;
+    case "getallusers":
+        getAllUsers();
+        break;
+    case "createnewsearch":
+        createNewSearch();
+        break;
+    case "closesearch":
+        closeSearch();
+        break;
+    default:
+        processOperationBasedOnSearchId();
+        break;
 }
 
 mysql_close();

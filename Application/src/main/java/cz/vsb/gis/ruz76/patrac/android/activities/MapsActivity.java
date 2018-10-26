@@ -214,7 +214,8 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
                     GeoPoint startPoint = new GeoPoint(lat, lon);
                     itemMarker.setPosition(startPoint);
                     itemMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                    itemMarker.setIcon(context.getResources().getDrawable(R.drawable.ic_info_green_24dp));
+                    // TODO set color according to state of the object
+                    itemMarker.setIcon(context.getResources().getDrawable(R.drawable.ic_my_location_green_24dp));
                     itemMarker.setTitle(items[3] + "\n" + items[0]);
                     map.getOverlays().add(itemMarker);
                 }
