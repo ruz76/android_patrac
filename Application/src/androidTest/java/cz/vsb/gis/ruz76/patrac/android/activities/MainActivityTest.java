@@ -57,11 +57,13 @@ public class MainActivityTest {
         onView(withText("PŘIPOJIT")).check(matches(isDisplayed()));
         Thread.sleep(2000);
         try {
-            onView(withText("MAPA")).check(matches(isDisplayed()));
-            Thread.sleep(2000);
             onView(withText("NASTAVENÍ")).check(matches(isDisplayed()));
             Thread.sleep(2000);
-            onView(withText("ODESLAT ZPRÁVU")).check(matches(isDisplayed()));
+            onView(withContentDescription("More options")).check(matches(isDisplayed()));
+            onView(withContentDescription("More options")).perform(click());
+            onView(withText("Mapa")).check(matches(isDisplayed()));
+            onView(withText("Odeslat zprávu")).check(matches(isDisplayed()));
+            Thread.sleep(2000);
         } catch (NoMatchingViewException e) {
             onView(withContentDescription("More options")).check(matches(isDisplayed()));
             onView(withContentDescription("More options")).perform(click());
@@ -267,6 +269,10 @@ public class MainActivityTest {
             onView(withText("NASTAVENÍ")).perform(click());
             Thread.sleep(2000);
             // Set Name
+            onView(withText("Obecné")).check(matches(isDisplayed()));
+            Thread.sleep(2000);
+            onView(withText("Obecné")).perform(click());
+            Thread.sleep(2000);
             onView(withText("Jméno")).check(matches(isDisplayed()));
             Thread.sleep(2000);
             onView(withText("Jméno")).perform(click());
@@ -306,6 +312,8 @@ public class MainActivityTest {
             onView(withText("OK")).perform(click());
             Thread.sleep(2000);
             // Navigate back to home screen
+            onView(withContentDescription("Navigate up")).perform(click());
+            Thread.sleep(2000);
             onView(withContentDescription("Navigate up")).perform(click());
             Thread.sleep(2000);
             //Todo Bug on devices with resolution 400 x 800
@@ -453,6 +461,6 @@ public class MainActivityTest {
 //            Thread.sleep(5000);
 //            onView(withText("Stopy pátračů")).perform(click());
 //            Thread.sleep(5000);
-//        }
+        }
     }
 }
