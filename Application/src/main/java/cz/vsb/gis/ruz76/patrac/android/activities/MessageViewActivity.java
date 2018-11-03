@@ -40,7 +40,7 @@ public class MessageViewActivity extends Activity {
         Bundle bundle = getIntent().getExtras();
         message = bundle.getString("message");
         filename = bundle.getString("filename");
-        TextView txtView = (TextView) findViewById(R.id.messageTextView);
+        TextView txtView = findViewById(R.id.messageTextView);
         String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).toString();
         path = path + "/" + filename;
         if (filename == null || filename.isEmpty()) {
@@ -98,6 +98,7 @@ public class MessageViewActivity extends Activity {
         return false;
     }
 
+    // Do it more better
     //TODO do it better, probably other types can be sent as well
     private String getType(String filename) {
         String parts[] = filename.split("\\.");
