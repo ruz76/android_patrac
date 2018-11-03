@@ -265,11 +265,13 @@ public class MessageSendActivity extends FragmentActivity implements GetRequestU
             String[] lines = result.split("\n");
             for (int lineid = 0; lineid < lines.length; lineid++) {
                 String[] items = lines[lineid].split(";");
-                User user = new User(items[0], items[3], false);
-                users.add(1, user);
-                usersNamesList.add(1, items[3]);
-                new AdapterHelper().update((ArrayAdapter) arrayAdapter, new ArrayList<Object>(usersNamesList));
-                arrayAdapter.notifyDataSetChanged();
+                if (items.length >= 4) {
+                    User user = new User(items[0], items[3], false);
+                    users.add(1, user);
+                    usersNamesList.add(1, items[3]);
+                    new AdapterHelper().update((ArrayAdapter) arrayAdapter, new ArrayList<Object>(usersNamesList));
+                    arrayAdapter.notifyDataSetChanged();
+                }
             }
         } else {
             // no info
