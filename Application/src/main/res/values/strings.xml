@@ -69,6 +69,8 @@
     <string name="message_attachment_placement">Umístění</string>
     <string name="message_was_sent">byla odeslána</string>
     <string name="message_was_not_sent">nebyla odeslána</string>
+    <string name="message_not_connected">Nejste připojeni. Nemohu odeslat zprávu.</string>
+    <string name="message_no_recipient">Není vybrán, žádný příjemce. Nemohu odeslat zprávu.</string>
 
     <!-- Strings related to Settings -->
 

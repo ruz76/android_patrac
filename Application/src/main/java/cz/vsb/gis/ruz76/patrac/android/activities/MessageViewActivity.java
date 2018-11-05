@@ -19,6 +19,7 @@ public class MessageViewActivity extends Activity {
 
     String message = "";
     String filename = "";
+    String from;
 
     /**
      * Set up the {@link android.app.ActionBar}, if the API is available.
@@ -40,13 +41,14 @@ public class MessageViewActivity extends Activity {
         Bundle bundle = getIntent().getExtras();
         message = bundle.getString("message");
         filename = bundle.getString("filename");
+        from = bundle.getString("from");
         TextView txtView = findViewById(R.id.messageTextView);
         String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).toString();
         path = path + "/" + filename;
         if (filename == null || filename.isEmpty()) {
-            txtView.setText(message);
+            txtView.setText(from + "\n" + message);
         } else {
-            txtView.setText(message + "\n" + getString(R.string.message_attachment_name) + ": " + filename + "\n" + getString(R.string.message_attachment_placement) + ": " + path);
+            txtView.setText(from + "\n" +message + "\n" + getString(R.string.message_attachment_name) + ": " + filename + "\n" + getString(R.string.message_attachment_placement) + ": " + path);
         }
         setupActionBar();
     }

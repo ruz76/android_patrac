@@ -70,6 +70,7 @@ function stripMessage($message) {
 
 function insertMessage($id, $message, $filename, $searchid, $shared, $from_id) {
     if (ctype_alnum($id) && ctype_alnum($from_id)) {
+        $message = urldecode($message);
         if (strlen($message) > 255) $message = substr($message, 255);
         $SQL = "INSERT INTO messages (id, message, file, searchid, shared, from_id) VALUES ('".$id."', '".stripMessage($message)."', '".$filename."', '".$searchid."', ".$shared.", '".$from_id."')";
         mysql_query($SQL) or die($SQL." ".mysql_error());
@@ -119,6 +120,9 @@ function createNewSearch() {
     $SQL = "INSERT INTO searches (searchid, description, status, region) 
         VALUES ('".$_REQUEST["searchid"]."', '".$_REQUEST["description"]."', 'confirmed', '".$_REQUEST["region"]."')";
 	mysql_query($SQL) or die(mysql_error());
+    $SQL = "INSERT INTO users (id, user_name) 
+        VALUES ('coordinator".$_REQUEST["searchid"]."', 'Štáb')";
+	mysql_query($SQL) or die(mysql_error());
 }
 
 function closeSearch() {
@@ -132,6 +136,8 @@ function processOperationBasedOnSearchId() {
     if (!isset($_REQUEST["searchid"])) die();
 	if ($_REQUEST["searchid"] == '') die();
 	if (!ctype_alnum($_REQUEST["searchid"])) die();
+    if (isset($_REQUEST["id"]) && !ctype_alnum($_REQUEST["id"])) die();
+    if (isset($_REQUEST["from_id"]) && !ctype_alnum($_REQUEST["from_id"])) die();
 	$SQL = "SELECT searchid FROM searches WHERE searchid = '".$_REQUEST["searchid"]."'";
 	$res = mysql_query($SQL) or die(mysql_error());
 	$row = mysql_fetch_array($res);
@@ -309,7 +315,12 @@ function processOperationBasedOnSearchId() {
 	        //echo $SQL;
 	        $res = mysql_query($SQL) or die(mysql_error()); 
 	        while ($row = mysql_fetch_array($res)) { 
-	            echo "M;".$row["id"].";".$row["message"].";".$row["file"].";".$row["dt_created"].";".$row["shared"]."\n";
+                $SQL = "SELECT user_name FROM users WHERE id = '".$row["from_id"]."'";
+                $res2 = mysql_query($SQL) or die(mysql_error()); 
+                $row2 = mysql_fetch_array($res2);
+                $from = "NN";
+                if ($row2["user_name"] != "") $from = $row2["user_name"];
+	            echo "M;".$row["id"].";".$row["message"].";".$row["file"].";".$row["dt_created"].";".$row["shared"].";".$from;
 	            $SQL = "UPDATE messages SET readed = 1 WHERE sysid = ".$row["sysid"];
 	            mysql_query($SQL) or die(mysql_error()); 
 	        }
@@ -365,9 +376,12 @@ function processOperationBasedOnSearchId() {
 //echo "OK";
 
 function checkSystemId() {
-    if (!preg_match ('/[a-zA-Z0-9]/', $_REQUEST["id"])) {
+    /*if (!preg_match ('/[a-zA-Z0-9]/', $_REQUEST["id"])) {
         die();    
-    }
+    }*/
+
+    if (!ctype_alnum($_REQUEST["id"])) die();
+    //echo $_REQUEST["id"];
     $SQL = "SELECT id, status FROM system_users WHERE id = '".$_REQUEST["id"]."'";
     $res = mysql_query($SQL) or die(mysql_error()); 
     $row = mysql_fetch_array($res);
