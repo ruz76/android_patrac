@@ -20,7 +20,7 @@ public class MapsActivityTest extends TestCase {
             MapsActivity.class);
 
     @Test
-    public void testProcessResponse() throws Exception {
+    public void testProcessResponse() {
         //MapsActivity mapsActivity = new MapsActivity();
         mActivityRule.getActivity().processResponse(null);
     }
