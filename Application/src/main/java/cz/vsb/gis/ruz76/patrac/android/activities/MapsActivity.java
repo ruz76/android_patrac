@@ -2,24 +2,17 @@ package cz.vsb.gis.ruz76.patrac.android.activities;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -27,22 +20,17 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import cz.vsb.gis.ruz76.patrac.android.helpers.DownloadFileFromUrl;
+import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
 import cz.vsb.gis.ruz76.patrac.android.R;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequest;
-import cz.vsb.gis.ruz76.patrac.android.domain.Waypoint;
 import cz.vsb.gis.ruz76.patrac.android.listeners.GpxListener;
 
 /**
@@ -59,6 +47,9 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
     private LocationManager locationManager;
     private Context context;
     private Marker startMarker;
+
+    private Timer timerRefreshPositions;
+    MapsActivity.RefreshPositions myRefreshPositionsTask;
 
     /**
      * Set up the {@link android.app.ActionBar}, if the API is available.
@@ -113,6 +104,7 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
         gpxListener.setmTextStatus(mTextStatus);
         gpxListView.setOnItemClickListener(gpxListener);
 
+        setRefreshPositionsTimer();
     }
 
     @Override
@@ -133,6 +125,19 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
         map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
+    }
+
+    /**
+     * Timer for call on duty state.
+     */
+    private void setRefreshPositionsTimer() {
+        if (timerRefreshPositions != null) {
+            timerRefreshPositions.cancel();
+        }
+
+        timerRefreshPositions = new Timer();
+        myRefreshPositionsTask = new MapsActivity.RefreshPositions();
+        timerRefreshPositions.schedule(myRefreshPositionsTask, 0, 1000 * 10);
     }
 
     @SuppressLint("MissingPermission")
@@ -165,7 +170,7 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
         startMarker.setTitle(getString(R.string.this_device));
         map.getOverlays().add(startMarker);
 
-        getLocations();
+        //getLocations();
 
         //startMarker.setIcon(context.getResources().getDrawable(R.drawable.ic_info_black_24dp));
         //mapController.zoomTo(9, 1000L);
@@ -223,4 +228,23 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
             map.invalidate();
         }
     }
+
+    /**
+     * Timer task for synchronization of messages.
+     */
+    class RefreshPositions extends TimerTask {
+
+        @Override
+        public void run() {
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    getLocations();
+                }
+            });
+        }
+
+    }
+
 }

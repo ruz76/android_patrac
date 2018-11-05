@@ -51,6 +51,7 @@
     <string name="local_track">Lokální stopa</string>
     <string name="searchers_positions">Poslední pozice pátračů</string>
     <string name="searchers_tracks">Stopy pátračů</string>
+    <string name="not_connected">Nejste připojeni, nemohu získat data o pozici.</string>
     <string name="preparing_data_wait">Připravuji data. Může chvíli trvat.</string>
     <string name="less_than_two_positions">V logu jsou méně než dvě pozice.</string>
     <string name="problem_to_create_log">Problém s vytvořením logu.</string>
