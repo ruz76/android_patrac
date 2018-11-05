@@ -81,6 +81,5 @@ android {
         androidTest {
             java.srcDir file('androidTest/java')
         }
-
     }
 }

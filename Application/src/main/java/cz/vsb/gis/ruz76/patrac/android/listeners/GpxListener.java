@@ -19,6 +19,7 @@ import java.util.TimeZone;
 import cz.vsb.gis.ruz76.patrac.android.R;
 import cz.vsb.gis.ruz76.patrac.android.activities.MainActivity;
 import cz.vsb.gis.ruz76.patrac.android.activities.MapsActivity;
+import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
 import cz.vsb.gis.ruz76.patrac.android.domain.Waypoint;
 import cz.vsb.gis.ruz76.patrac.android.helpers.DownloadFileFromUrl;
 
@@ -49,6 +50,10 @@ public class GpxListener implements AdapterView.OnItemClickListener {
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (MainActivity.mode != RequestMode.TRACKING) {
+            mTextStatus.setText(mapsActivity.getString(R.string.not_connected));
+            return;
+        }
         if (position == 0) {
             mTextStatus.setText(mapsActivity.getString(R.string.preparing_data_wait));
             int log = createLocalGpx();
@@ -99,7 +104,8 @@ public class GpxListener implements AdapterView.OnItemClickListener {
     }
 
     private int createLocalGpx() {
-        //if (MainActivity.waypoints.size() < 2) return 1;
+        if (MainActivity.waypoints == null) return 1;
+        if (MainActivity.waypoints.size() < 2) return 1;
         String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).toString() + "/local.gpx";
         try {
             PrintStream local_gpx = new PrintStream(new FileOutputStream(path));
