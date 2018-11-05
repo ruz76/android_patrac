@@ -341,7 +341,7 @@ public class MainActivityTest {
         Thread.sleep(SLEEP_TIME);
         onView(withClassName(endsWith("EditText"))).perform(clearText());
         Thread.sleep(SLEEP_TIME);
-        onView(withClassName(endsWith("EditText"))).perform(typeText("XXX"));
+        onView(withClassName(endsWith("EditText"))).perform(typeText("QA"));
         Thread.sleep(SLEEP_TIME);
         onView(withText("OK")).perform(click());
         Thread.sleep(SLEEP_TIME);
