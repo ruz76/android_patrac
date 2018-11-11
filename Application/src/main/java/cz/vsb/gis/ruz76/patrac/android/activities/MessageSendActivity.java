@@ -36,6 +36,7 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 import cz.vsb.gis.ruz76.patrac.android.adapters.UsersArrayAdapter;
+import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
 import cz.vsb.gis.ruz76.patrac.android.domain.User;
 import cz.vsb.gis.ruz76.patrac.android.helpers.AdapterHelper;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
@@ -106,6 +107,12 @@ public class MessageSendActivity extends FragmentActivity implements GetRequestU
     }
 
     private void sendMessage() {
+        if (MainActivity.mode != RequestMode.TRACKING) {
+            Toast toast = Toast.makeText(MessageSendActivity.this, getString(R.string.message_not_connected), Toast.LENGTH_LONG);
+            toast.show();
+            return;
+        }
+
         String url = getString(R.string.pref_default_endpoint);
         RequestParams params = new RequestParams();
         String ids = "";
@@ -121,7 +128,7 @@ public class MessageSendActivity extends FragmentActivity implements GetRequestU
         }
 
         if (ids.isEmpty()) {
-            Toast toast = Toast.makeText(MessageSendActivity.this, "NO RECIPIENT", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(MessageSendActivity.this, getString(R.string.message_no_recipient), Toast.LENGTH_LONG);
             toast.show();
             return;
         }

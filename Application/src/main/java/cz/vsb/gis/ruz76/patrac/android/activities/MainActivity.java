@@ -26,13 +26,9 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.view.menu.ActionMenuItemView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -57,7 +53,7 @@ import cz.vsb.gis.ruz76.patrac.android.helpers.DownloadFileFromUrl;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
 import cz.vsb.gis.ruz76.patrac.android.R;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequest;
-import cz.vsb.gis.ruz76.patrac.android.domain.MessageFile;
+import cz.vsb.gis.ruz76.patrac.android.domain.Message;
 import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
 import cz.vsb.gis.ruz76.patrac.android.domain.Waypoint;
 import cz.vsb.gis.ruz76.patrac.android.helpers.Notificator;
@@ -111,7 +107,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
 
     // Create a List from String Array elements
     private List<String> messages_list;
-    private List<MessageFile> messages_list_full;
+    private List<Message> messages_list_full;
 
     // Create an ArrayAdapter from List
     private ArrayAdapter<String> arrayAdapter;
@@ -253,7 +249,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         String[] messages = new String[]{getString(R.string.messages_list_title)};
         messages_list = new ArrayList<>(Arrays.asList(messages));
 
-        MessageFile mf = new MessageFile(getString(R.string.messages_list_title), getString(R.string.messages_no_attachment));
+        Message mf = new Message(getString(R.string.messages_list_title), getString(R.string.messages_no_attachment), "");
         messages_list_full = new ArrayList<>();
         messages_list_full.add(mf);
 
@@ -269,6 +265,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                 Intent appInfo = new Intent(MainActivity.this, MessageViewActivity.class);
                 appInfo.putExtra("message", messages_list_full.get(position).getMessage());
                 appInfo.putExtra("filename", messages_list_full.get(position).getFilename());
+                appInfo.putExtra("from", messages_list_full.get(position).getFrom());
                 startActivity(appInfo);
             }
 
@@ -495,12 +492,9 @@ public class MainActivity extends Activity implements LocationListener, GetReque
      * Initialize the connection.
      */
     private void connect() {
-
         resetItems();
 
-        /**
-         * Sets the timer for logging position.
-         */
+        // Sets the timer for logging position.
         if (timerPosition != null) {
             timerPosition.cancel();
         }
@@ -510,9 +504,8 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         int sync_frequency_gps = Integer.parseInt(sync_frequency_gps_string) * 1000;
         timerPosition.schedule(myPositionTask, 1000, sync_frequency_gps);
 
-        /**
-         * Sets the times for checking messages.
-         */
+
+        // Sets the times for checking messages.
         if (timerMessage != null) {
             timerMessage.cancel();
         }
@@ -690,10 +683,11 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         //New mesage is on the way
         messagesCount++;
         String items[] = result.split(";");
-        MessageFile mf = new MessageFile(getString(R.string.message_when) + ": " + items[4] + "\n" + getString(R.string.message) + ": " + items[2], items[3]);
+        Message mf = new Message(getString(R.string.message_when) + ": " + items[4] + "\n" + getString(R.string.message) + ": " + items[2], items[3], items[6]);
         messages_list_full.add(0, mf);
+        String short_message = items[2].length() > 20 ? items[2].substring(0, 20) + "..." : items[2];
         if (items[3].length() > 1) {
-            messages_list.add(0, items[4].substring(0, items[4].length() - 3).split(" ")[1] + ": " + items[2] + " (@)");
+            messages_list.add(0, items[6] + ": " + items[4].substring(0, items[4].length() - 3).split(" ")[1] + ": " + short_message + " (@)");
             //Shared file
             String shared = items[5].replace("\n", "");
             if (shared.equalsIgnoreCase("1")) {
@@ -703,7 +697,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                 downloadFromUrl(endPoint + "operation=getfile&searchid=" + searchid + "&id=" + sessionId + "&filename=" + items[3], items[3]);
             }
         } else {
-            messages_list.add(0, items[4].substring(0, items[4].length() - 3).split(" ")[1] + ": " + items[2]);
+            messages_list.add(0, items[6] + ": " + items[4].substring(0, items[4].length() - 3).split(" ")[1] + ": " + short_message);
         }
         new AdapterHelper().update((ArrayAdapter) arrayAdapter, new ArrayList<Object>(messages_list));
         arrayAdapter.notifyDataSetChanged();
