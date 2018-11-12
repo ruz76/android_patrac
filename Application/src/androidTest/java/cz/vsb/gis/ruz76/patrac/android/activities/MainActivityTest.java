@@ -1,23 +1,11 @@
 package cz.vsb.gis.ruz76.patrac.android.activities;
 
-import android.app.DownloadManager;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
-import android.support.test.espresso.action.ViewActions;
-import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
-import android.webkit.DownloadListener;
-import android.webkit.MimeTypeMap;
-import android.webkit.URLUtil;
-
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -25,31 +13,18 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import junit.framework.AssertionFailedError;
-
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.Request;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 import cz.vsb.gis.ruz76.patrac.android.R;
-import cz.vsb.gis.ruz76.patrac.android.domain.Message;
-import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequest;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.clearText;
@@ -62,7 +37,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
@@ -126,46 +100,6 @@ public class MainActivityTest {
         Context targetContext = InstrumentationRegistry.getTargetContext();
         return targetContext.getResources().getString(id);
     }
-
-
-    @Test
-    public void api_gpx_lastTest() {
-        RequestQueue queue = Volley.newRequestQueue(mActivityRule.getActivity());
-        String url = "http://gisak.vsb.cz/patrac/mserver.php?operation=getgpx_last&searchid=QA";
-        DownloadManager.Request req = new DownloadManager.Request(Uri.parse(url));
-
-        req.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI
-                | DownloadManager.Request.NETWORK_MOBILE)
-                .setAllowedOverRoaming(false)
-                .setDestinationInExternalPublicDir("/sdcard/DCIM/", "test.gpx");
-
-        // gets the files in the directory
-        File fileDirectory = new File(Environment.getDataDirectory()+"/sdcard/DCIM/");
-        // lists all the files into an array
-        File[] dirFiles = fileDirectory.listFiles();
-
-        if (dirFiles.length != 0) {
-            // loops through the array of files, outputing the name to console
-            for (int ii = 0; ii < dirFiles.length; ii++) {
-                String fileOutput = dirFiles[ii].toString();
-                System.out.println(fileOutput);
-            }
-        }
-    }
-//        try {
-//
-//            Scanner sc = new Scanner(file);
-//
-//            while (sc.hasNextLine()) {
-//                int i = sc.nextInt();
-//                System.out.println(i);
-//            }
-//            sc.close();
-//        }
-//        catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     @Test
     public void menuItemsPresentedTest() throws InterruptedException {
@@ -289,9 +223,9 @@ public class MainActivityTest {
         onView(withText("ODPOJIT")).check(matches(isDisplayed()));
         Thread.sleep(SLEEP_TIME);
         onView(withText("Seznam zpráv")).check(matches(isDisplayed()));
-        Thread.sleep(SLEEP_TIME);
+        Thread.sleep(SLEEP_TIME_MID);
         onView(withText("Sleduji pohyb")).check(matches(isDisplayed()));
-        Thread.sleep(SLEEP_TIME);
+        Thread.sleep(SLEEP_TIME_MID);
     }
 
     @Test
@@ -504,7 +438,8 @@ public class MainActivityTest {
 
     private void writeMockAttachmentFile() throws IOException {
         File file = new File("/sdcard/DCIM/android_attachment.jpg");
-        file.createNewFile();
+        boolean sucess = file.createNewFile();
+        //file.createNewFile();
         byte[] data1={1,1,0,0};
         if(file.exists())
         {
