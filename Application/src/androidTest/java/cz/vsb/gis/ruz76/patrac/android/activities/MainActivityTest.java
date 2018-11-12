@@ -1,6 +1,11 @@
 package cz.vsb.gis.ruz76.patrac.android.activities;
 
+import android.app.DownloadManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.action.ViewActions;
@@ -8,33 +13,58 @@ import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
+import android.webkit.DownloadListener;
+import android.webkit.MimeTypeMap;
+import android.webkit.URLUtil;
+
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import junit.framework.AssertionFailedError;
 
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.Request;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 import cz.vsb.gis.ruz76.patrac.android.R;
+import cz.vsb.gis.ruz76.patrac.android.domain.Message;
+import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequest;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 
 
@@ -65,10 +95,77 @@ public class MainActivityTest {
         Thread.sleep(SLEEP_TIME);
     }
 
+    @Test
+    public void api_getlocationsTest() {
+        RequestQueue queue = Volley.newRequestQueue(mActivityRule.getActivity());
+        String url = "http://gisak.vsb.cz/patrac/mserver.php?operation=getlocations&searchid=QA";
+        final String[] expectedResults = {"5bdedbe4078fd;2018-11-04 12:46:12;D;Pcr1234;18.788859 49.301304;",
+                "5bdeedc9c32e2;2018-11-04 14:21:02;D;Pcr1234;18.781113 49.29651;",
+                "5bdf00d583b8d;2018-11-04 14:23:17;D;Pcr1234;18.781182 49.296531;",
+                "5be802a7e6588;2018-11-11 10:21:28;D;pcr1234;-122.084 37.421998;"};
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(com.android.volley.Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        for (String temp : expectedResults) {
+                            assertThat(response, containsString(temp));
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+            }
+        });
+
+        queue.add(stringRequest);
+    }
+
     private String getResourceString(int id) {
         Context targetContext = InstrumentationRegistry.getTargetContext();
         return targetContext.getResources().getString(id);
     }
+
+
+    @Test
+    public void api_gpx_lastTest() {
+        RequestQueue queue = Volley.newRequestQueue(mActivityRule.getActivity());
+        String url = "http://gisak.vsb.cz/patrac/mserver.php?operation=getgpx_last&searchid=QA";
+        DownloadManager.Request req = new DownloadManager.Request(Uri.parse(url));
+
+        req.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI
+                | DownloadManager.Request.NETWORK_MOBILE)
+                .setAllowedOverRoaming(false)
+                .setDestinationInExternalPublicDir("/sdcard/DCIM/", "test.gpx");
+
+        // gets the files in the directory
+        File fileDirectory = new File(Environment.getDataDirectory()+"/sdcard/DCIM/");
+        // lists all the files into an array
+        File[] dirFiles = fileDirectory.listFiles();
+
+        if (dirFiles.length != 0) {
+            // loops through the array of files, outputing the name to console
+            for (int ii = 0; ii < dirFiles.length; ii++) {
+                String fileOutput = dirFiles[ii].toString();
+                System.out.println(fileOutput);
+            }
+        }
+    }
+//        try {
+//
+//            Scanner sc = new Scanner(file);
+//
+//            while (sc.hasNextLine()) {
+//                int i = sc.nextInt();
+//                System.out.println(i);
+//            }
+//            sc.close();
+//        }
+//        catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Test
     public void menuItemsPresentedTest() throws InterruptedException {
@@ -416,4 +513,6 @@ public class MainActivityTest {
             fo.close();
         }
     }
+
+
 }
