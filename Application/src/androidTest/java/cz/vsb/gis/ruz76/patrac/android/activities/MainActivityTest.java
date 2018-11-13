@@ -79,7 +79,36 @@ public class MainActivityTest {
     }
 
     @Test
-    public void api_getlocationsTest() {
+    public void api_Gpx_LastTest() {
+
+        String line;
+        URL url = null;
+        StringBuilder downloadedFile = new StringBuilder();
+        try {
+            url = new URL("http://gisak.vsb.cz/patrac/mserver.php?operation=getgpx_last&searchid=QA");
+            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+
+            while ((line = in.readLine()) != null) {
+                // do something with line
+                downloadedFile.append(line);
+                downloadedFile.append('\n');
+            }
+            in.close();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println();
+        final String[] expectedResults = {"<?xml version=\"1.0\"?>\n<gpx version=\"1.1\" creator=\"Patrac Server\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:ogr=\"http://osgeo.org/gdal\" xmlns=\"http://www.topografix.com/GPX/1/1\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\"",
+                "<wpt lat=\"37.421998\" lon=\"-122.084\"><name>pcr1234</name><desc>SessionId: 5be02660d94d0</desc>"};
+        for (String result : expectedResults) {
+            assertThat(downloadedFile.toString(), containsString(result));
+        }
+    }
+
+    @Test
+    public void api_GetLocationsTest() {
         RequestQueue queue = Volley.newRequestQueue(mActivityRule.getActivity());
         String url = "http://gisak.vsb.cz/patrac/mserver.php?operation=getlocations&searchid=QA";
         final String[] expectedResults = {"5bdedbe4078fd;2018-11-04 12:46:12;D;Pcr1234;18.788859 49.301304;",
@@ -87,6 +116,32 @@ public class MainActivityTest {
                 "5bdf00d583b8d;2018-11-04 14:23:17;D;Pcr1234;18.781182 49.296531;",
                 "5be802a7e6588;2018-11-11 10:21:28;D;pcr1234;-122.084 37.421998;"};
 
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(com.android.volley.Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        for (String temp : expectedResults) {
+                            assertThat(response, containsString(temp));
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+            }
+        });
+
+        queue.add(stringRequest);
+    }
+
+    @Test
+    public void api_GetTracks_Test() {
+        RequestQueue queue = Volley.newRequestQueue(mActivityRule.getActivity());
+        String url = "http://gisak.vsb.cz/patrac/mserver.php?operation=getlocations&searchid=QA";
+        final String[] expectedResults = {"5bdedbe4078fd;2018-11-04 12:46:12;D;Pcr1234;18.788859 49.301304;",
+                "5bdeedc9c32e2;2018-11-04 14:21:02;D;Pcr1234;18.781113 49.29651;",
+                "5bdf00d583b8d;2018-11-04 14:23:17;D;Pcr1234;18.781182 49.296531;",
+                "5be802a7e6588;2018-11-11 10:21:28;D;pcr1234;-122.084 37.421998;"};
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(com.android.volley.Request.Method.GET, url,
                 new Response.Listener<String>() {
@@ -415,11 +470,11 @@ public class MainActivityTest {
 
     private void checkMapActivityNotConnected() throws InterruptedException {
         try {
-        onView(withText("Připraven")).check(matches(isDisplayed()));
-        onView(withText("Lokální stopa")).perform(click());
-        Thread.sleep(SLEEP_TIME);
-        onView(withText("Nejste připojeni, nemohu získat data o pozici.")).check(matches(isDisplayed()));
-        Thread.sleep(SLEEP_TIME);
+            onView(withText("Připraven")).check(matches(isDisplayed()));
+            onView(withText("Lokální stopa")).perform(click());
+            Thread.sleep(SLEEP_TIME);
+            onView(withText("Nejste připojeni, nemohu získat data o pozici.")).check(matches(isDisplayed()));
+            Thread.sleep(SLEEP_TIME);
         } catch (NoMatchingViewException e) {
             onView(withText("V logu jsou méně než dvě pozice.")).check(matches(isDisplayed()));
             Thread.sleep(SLEEP_TIME);
@@ -427,6 +482,7 @@ public class MainActivityTest {
 
 
     }
+
     private void checkMapActivityConnected() throws InterruptedException {
         Thread.sleep(SLEEP_TIME);
         onView(withText("Stopy a pozice")).check(matches(isDisplayed()));
@@ -447,43 +503,11 @@ public class MainActivityTest {
 
     private void writeMockAttachmentFile() throws IOException {
         File file = new File("/sdcard/DCIM/android_attachment.jpg");
-        boolean sucess = file.createNewFile();
-        byte[] data1={1,1,0,0};
-        if(file.exists())
-        {
+        byte[] data1 = {1, 1, 0, 0};
+        if (file.exists()) {
             OutputStream fo = new FileOutputStream(file);
             fo.write(data1);
             fo.close();
         }
-    }
-
-    @Test
-    public void api_gpx_lastTest() {
-
-        String line;
-        URL url = null;
-        StringBuilder downloadedFile = new StringBuilder();
-        try {
-            url = new URL("http://gisak.vsb.cz/patrac/mserver.php?operation=getgpx_last&searchid=QA");
-            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-
-            while ((line = in.readLine()) != null) {
-                // do something with line
-                downloadedFile.append(line);
-                downloadedFile.append('\n');
-            }
-            in.close();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        final String[] expectedResults = {"<wpt lat=\"37.421998\" lon=\"-122.084\"><name>pcr1234</name><desc>SessionId: 5be026be7eedd</desc>",
-                "<wpt lat=\"37.421998\" lon=\"-122.084\"><name>pcr1234</name><desc>SessionId: 5be02660d94d0</desc>"};
-        for (String result : expectedResults) {
-            assertThat(downloadedFile.toString(), containsString(result));
-        }
-
     }
 }
