@@ -1,6 +1,9 @@
 package cz.vsb.gis.ruz76.patrac.android.activities;
 
+import android.app.DownloadManager;
 import android.content.Context;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.filters.LargeTest;
@@ -19,10 +22,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import cz.vsb.gis.ruz76.patrac.android.R;
 
@@ -439,7 +448,6 @@ public class MainActivityTest {
     private void writeMockAttachmentFile() throws IOException {
         File file = new File("/sdcard/DCIM/android_attachment.jpg");
         boolean sucess = file.createNewFile();
-        //file.createNewFile();
         byte[] data1={1,1,0,0};
         if(file.exists())
         {
@@ -449,5 +457,33 @@ public class MainActivityTest {
         }
     }
 
+    @Test
+    public void api_gpx_lastTest() {
 
+        String line;
+        URL url = null;
+        StringBuilder downloadedFile = new StringBuilder();
+        try {
+            url = new URL("http://gisak.vsb.cz/patrac/mserver.php?operation=getgpx_last&searchid=QA");
+            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+
+            while ((line = in.readLine()) != null) {
+                // do something with line
+                downloadedFile.append(line);
+                downloadedFile.append('\n');
+            }
+            in.close();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        final String[] expectedResults = {"<wpt lat=\"37.421998\" lon=\"-122.084\"><name>pcr1234</name><desc>SessionId: 5be026be7eedd</desc>",
+                "<wpt lat=\"37.421998\" lon=\"-122.084\"><name>pcr1234</name><desc>SessionId: 5be02660d94d0</desc>"};
+        for (String result : expectedResults) {
+            assertThat(downloadedFile.toString(), containsString(result));
+        }
+
+    }
 }
