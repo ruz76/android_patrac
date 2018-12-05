@@ -7,7 +7,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +26,7 @@ public class CallOnDutyActivity extends Activity {
     // Create an ArrayAdapter from List
     private ArrayAdapter<String> arrayAdapter;
     private ListView listViewSearches;
+    private boolean searchWasSelected = false;
 
 
     /**
@@ -39,6 +42,7 @@ public class CallOnDutyActivity extends Activity {
 
     /**
      * Adds back button handling.
+     *
      * @param item
      * @return
      */
@@ -58,7 +62,7 @@ public class CallOnDutyActivity extends Activity {
         Bundle bundle = getIntent().getExtras();
         searches = bundle.getStringArray("searches");
         searchesList = new ArrayList<>();
-        for (int i = 0; i<searches.length; i++) {
+        for (int i = 0; i < searches.length; i++) {
             searchesList.add(searches[i].split(";")[1]);
         }
         arrayAdapter = new ArrayAdapter<String>
@@ -72,8 +76,31 @@ public class CallOnDutyActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 MainActivity.searchid = searches[position].split(";")[0];
+                searchWasSelected = true;
+            }
+        });
+
+        Button buttonArrive = findViewById(R.id.buttonArrive);
+        buttonArrive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!searchWasSelected) {
+                    MainActivity.searchid = searches[0].split(";")[0];
+                }
                 MainActivity.mode = RequestMode.SELECTED;
+                MainActivity.arrive = getSelectedTime();
                 Toast toast = Toast.makeText(CallOnDutyActivity.this, R.string.call_on_duty_selected, Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
+
+        Button buttonNotArrive = findViewById(R.id.buttonNotArrive);
+        buttonNotArrive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.mode = RequestMode.SELECTED;
+                MainActivity.arrive = "NKD";
+                Toast toast = Toast.makeText(CallOnDutyActivity.this, R.string.call_on_duty_not_selected, Toast.LENGTH_LONG);
                 toast.show();
             }
         });
@@ -82,5 +109,25 @@ public class CallOnDutyActivity extends Activity {
         textViewDutyDescription.setText(getString(R.string.activity_call_on_duty_description));
 
         setupActionBar();
+    }
+
+    private String getSelectedTime() {
+        RadioButton rb = (RadioButton) findViewById(R.id.radioButton30);
+        if (rb.isChecked()) {
+            return "30m";
+        }
+        rb = (RadioButton) findViewById(R.id.radioButton60);
+        if (rb.isChecked()) {
+            return "60m";
+        }
+        rb = (RadioButton) findViewById(R.id.radioButton120);
+        if (rb.isChecked()) {
+            return "120m";
+        }
+        rb = (RadioButton) findViewById(R.id.radioButtonGt120);
+        if (rb.isChecked()) {
+            return "v120m";
+        }
+        return "30m";
     }
 }

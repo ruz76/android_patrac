@@ -26,13 +26,13 @@
     <TextView
         android:id="@+id/intro_text"
         android:layout_width="match_parent"
-        android:layout_height="134dp"
+        android:layout_height="74dp"
         android:layout_margin="@dimen/cardview_default_elevation"
         android:freezesText="true"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         android:text="@string/welcome_message"
-        android:textSize="14sp" />
+        android:textSize="16sp" />
 
     <ListView
         android:id="@+id/messagesListView"
@@ -70,6 +70,7 @@
         android:minLines="2"
         android:paddingLeft="5dp"
         android:paddingRight="5dp"
+        android:scrollHorizontally="true"
         android:scrollbars="horizontal"
         android:textSize="14sp" />
 </LinearLayout>

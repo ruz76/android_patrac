@@ -155,7 +155,11 @@ public class MessageSendActivity extends FragmentActivity implements GetRequestU
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] bytes) {
                 // handle success response
-                Toast toast = Toast.makeText(MessageSendActivity.this, getString(R.string.message) + " " + getString(R.string.message_was_sent), Toast.LENGTH_LONG);
+                String message = getString(R.string.message) + " " + getString(R.string.message_was_sent);
+                if (new String(bytes).startsWith("Sorry")) {
+                    message = getString(R.string.message_attachment_was_not_uploaded);
+                }
+                Toast toast = Toast.makeText(MessageSendActivity.this, message, Toast.LENGTH_LONG);
                 toast.show();
                 fileToUploadPath = null;
             }

@@ -76,7 +76,7 @@ function insertMessage($id, $message, $filename, $searchid, $shared, $from_id) {
         mysql_query($SQL) or die($SQL." ".mysql_error());
         echo "OK ".$SQL;
     } else {
-        echo "ERROR (incorrect input): ".$id." ".$from_id;
+        echo "ERROR (incorrect input): ID: ".$id." FROM_ID: ".$from_id;
     }
 }
 
@@ -129,6 +129,8 @@ function closeSearch() {
     checkSystemId(); 
 	if (!ctype_alnum($_REQUEST["searchid"])) die();
     $SQL = "UPDATE searches SET status = 'closed' WHERE searchid = '".$_REQUEST["searchid"]."'";
+	mysql_query($SQL) or die(mysql_error());
+    $SQL = "UPDATE system_users SET status = 'released' WHERE searchid = '".$_REQUEST["searchid"]."'";
 	mysql_query($SQL) or die(mysql_error());
 }
 
@@ -403,11 +405,17 @@ function getSearches() {
         onduty - searcher accepted the call
     */
 
-    if (isset($_REQUEST["searchid"])) {
+    if (isset($_REQUEST["arrive"])) {
         // accept the search
-        $SQL = "UPDATE system_users SET searchid = '".$_REQUEST["searchid"]."', status = 'onduty' WHERE id = '".$_REQUEST["id"]."'";
+        $SQL = "UPDATE system_users SET status = 'readyforduty', arrive = '".$_REQUEST["arrive"]."' WHERE id = '".$_REQUEST["id"]."'";
+        // not accept the search
+        if ($_REQUEST["arrive"] == "NKD") {
+          $SQL = "UPDATE system_users SET status = 'sleeping', arrive = '".$_REQUEST["arrive"]."' WHERE id = '".$_REQUEST["id"]."'";
+          echo "! ".$SQL;
+        } else {
+          echo "@ ".$SQL;
+        }
         mysql_query($SQL) or die(mysql_error());
-        echo "@";
     }
 
     if (isset($_REQUEST["lon"]) && isset($_REQUEST["lat"]) && checkLatLon($_REQUEST["lon"], $_REQUEST["lat"])) {
@@ -432,11 +440,18 @@ function getSearches() {
 
     if ($row["status"] == "callonduty") {
         // sends the list of searches
-        $SQL = "SELECT searchid, description FROM searches WHERE status = 'confirmed'";
+        $SQL = "SELECT searchid FROM system_users WHERE id = '".$_REQUEST["id"]."'";
+        $res = mysql_query($SQL) or die(mysql_error()); 
+        $row = mysql_fetch_array($res);
+        $SQL = "SELECT searchid, description FROM searches WHERE status = 'confirmed' AND searchid = '".$row["searchid"]."'";
         $res = mysql_query($SQL) or die(mysql_error()); 
         while ($row = mysql_fetch_array($res)) {
             echo $row["searchid"].";".$row["description"]."\n";
         } 
+    }
+
+    if ($row["status"] == "calltojoin") {
+        echo "<>";
     }
 }
 
@@ -446,7 +461,7 @@ function getSystemUsers($kraje) {
     $res = mysql_query($SQL) or die(mysql_error()); 
     while ($row = mysql_fetch_array($res)) {
         $region = getRegion($kraje, $row["lon"], $row["lat"]);
-        echo $row["sysid"].";".$row["user_name"].";".$row["status"].";".$row["searchid"].";".$region."\n";
+        echo $row["sysid"].";".$row["user_name"].";".$row["status"].";".$row["searchid"].";".$region.";".$row["arrive"]."\n";
     }
 }
 
@@ -464,11 +479,19 @@ function changeStatus() {
       } else {
           $SQL = "UPDATE system_users SET status = '".$_REQUEST["status_to"]."'";
       }
+      $SQL .= ", searchid = '".$_REQUEST["searchid"]."'";
+      if ($_REQUEST["status_to"] == "released") {
+        $SQL .= ", arrive = ''";
+      }
       $SQL .= " WHERE sysid IN (".implode(',',$items).")";
       echo $SQL;  
       mysql_query($SQL) or die(mysql_error()); 
     } else {
       $SQL = "UPDATE system_users SET status = '".$_REQUEST["status_to"]."'";
+      $SQL .= ", searchid = '".$_REQUEST["searchid"]."'";
+      if ($_REQUEST["status_to"] == "released") {
+        $SQL .= ", arrive = ''";
+      }
       $SQL .= " WHERE id = '".$_REQUEST["id"]."'";
       echo $SQL;  
       mysql_query($SQL) or die(mysql_error()); 

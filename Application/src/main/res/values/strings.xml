@@ -16,10 +16,7 @@
 
 <resources>
     <string name="welcome_message">
-        Vítejte v monitoru pátrače. Zmáčkněte tlačítko Připojit pro spojení se serverem.
-        Aplikace odesílá vaši polohu na server. Štáb může sledovat vaši pozici v reálném čase.
-        Pro běh potřebujete zapnutou GPS a datové připojení na Internet (např. 4G LTE).
-        Štáb vám také může zaslat zprávu, včetně GPX souboru.
+        Zapněte GPS. Zapněte datové připojení. V nastavení vyplňte jméno a naskenujte kód pátrání. Zmáčkněte tlačítko připojit.
     </string>
     <string name="connect">Připojit</string>
     <string name="disconnect">Odpojit</string>
@@ -65,6 +62,8 @@
     <string name="sent_messages_list_title">Seznam odeslaných zpráv</string>
     <string name="message_when">Kdy</string>
     <string name="message">Zpráva</string>
+    <string name="message_attachment_was_not_uploaded">Zpráva byla odeslána, ale příloha nebyla nahrána.
+        Možná příčina: chyba serveru nebo bezpečnostní riziko.</string>
     <string name="message_attachment_name">Název přílohy</string>
     <string name="message_attachment_placement">Umístění</string>
     <string name="message_was_sent">byla odeslána</string>
@@ -167,7 +166,7 @@
 
     <string name="pref_title_vibrate">Vibrace</string>
     <string name="title_activity_maps">MapsActivity</string>
-    <string name="title_activity_message_send">Odeslat zprávu</string>
+    <string name="title_activity_message_send">Zprávy</string>
 
     <string name="message_send">Odeslat</string>
     <string name="message_attachment">Příloha</string>
@@ -179,16 +178,24 @@
     <string name="coordinator">Štáb</string>
 
     <string name="title_activity_call_on_duty">Aktuální pátrání</string>
-    <string name="activity_call_on_duty_description">Připojte se k pátrání, kliknutím na pátrání v seznamu. Pokud je seznam prázdný, došlo k chybě, kontaktujte dipečnink.</string>
-    <string name="call_on_duty_selected">Právě jste se připojili k pátrání. Až dorazíte na místo nezapomeňte zahájit sledování pomocí tlačítka Připojit.</string>
+    <string name="activity_call_on_duty_description">Jste zvání k pátrání. </string>
+    <string name="call_on_duty_selected">Právě jste se přihlásili k pátrání. Pokud budete vyzváni k zapojení objeví se vám zpráva. Vyčkejte prosím. </string>
+    <string name="call_on_duty_not_selected">Odmítli jste účast na pátrání. Tak příště.</string>
+    <string name="on_duty">Byli jste vyzvání k příjezdu na místo. Automaticky bylo aktivováno vaše sledování.</string>
 
     <string name="mode_sleeping">Čekám na pátrání</string>
     <string name="mode_waiting">Čekám na pozvání k pátrání</string>
     <string name="mode_selected">Čekám na potvrzení o přiřazení k vybranému pátrání</string>
-    <string name="mode_ready_for_tracking">Jsem připraven zahájit sledování. Pro sledování použij tlačítko Připojit.</string>
+    <string name="mode_ready_for_tracking">Čekám na výzvu k výjezdu.</string>
     <string name="mode_tracking">Sleduji pohyb</string>
 
     <string name="error_unexpected">Jsem zmaten. Toto jsem nečekal. Raději mě vypni a zapni.</string>
+    <string name="buttonArrive">Mohu přijet do</string>
+    <string name="arrive30m">30 m</string>
+    <string name="arrive60m">1 h</string>
+    <string name="arrive120m">2 h</string>
+    <string name="arriveGt120m"><![CDATA[> 2 h]]></string>
+    <string name="buttonNotArrive">Nemohu přijet</string>
 
 </resources>
 

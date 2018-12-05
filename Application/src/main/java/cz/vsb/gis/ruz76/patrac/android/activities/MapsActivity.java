@@ -19,6 +19,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +48,7 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
     private LocationManager locationManager;
     private Context context;
     private Marker startMarker;
+    private List<Overlay> overlays;
 
     private Timer timerRefreshPositions;
     MapsActivity.RefreshPositions myRefreshPositionsTask;
@@ -169,7 +171,6 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
         startMarker.setIcon(context.getResources().getDrawable(R.drawable.ic_my_location_black_24dp));
         startMarker.setTitle(getString(R.string.this_device));
         map.getOverlays().add(startMarker);
-
         //getLocations();
 
         //startMarker.setIcon(context.getResources().getDrawable(R.drawable.ic_info_black_24dp));
@@ -209,7 +210,11 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
     @Override
     public void processResponse(String result) {
         if (result != null) {
+            if (overlays != null) {
+                map.getOverlays().removeAll(overlays);
+            }
             String[] searchers = result.split("\n");
+            overlays = new ArrayList<>();
             for (int i = 0; i < searchers.length; i++) {
                 String[] items = searchers[i].split(";");
                 if (items.length > 5) {
@@ -222,6 +227,7 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
                     // TODO set color according to state of the object
                     itemMarker.setIcon(context.getResources().getDrawable(R.drawable.ic_my_location_green_24dp));
                     itemMarker.setTitle(items[3] + "\n" + items[0]);
+                    overlays.add(itemMarker);
                     map.getOverlays().add(itemMarker);
                 }
             }

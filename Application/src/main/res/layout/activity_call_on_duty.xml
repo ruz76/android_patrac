@@ -16,7 +16,7 @@
         <TextView
             android:id="@+id/textViewDutyDescription"
             android:layout_width="match_parent"
-            android:layout_height="85dp"
+            android:layout_height="66dp"
             android:layout_margin="5px"
             android:padding="5px"
             android:text="TextView" />
@@ -24,7 +24,55 @@
         <ListView
             android:id="@+id/listViewSearches"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="62dp"
             android:layout_margin="5dp" />
+
+        <Button
+            android:id="@+id/buttonArrive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/buttonArrive" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="98dp"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioButton30"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="true"
+                android:text="@string/arrive30m" />
+
+            <RadioButton
+                android:id="@+id/radioButton60"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/arrive60m" />
+
+            <RadioButton
+                android:id="@+id/radioButton120"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/arrive120m" />
+
+            <RadioButton
+                android:id="@+id/radioButtonGt120"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/arriveGt120m" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/buttonNotArrive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/buttonNotArrive" />
+
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

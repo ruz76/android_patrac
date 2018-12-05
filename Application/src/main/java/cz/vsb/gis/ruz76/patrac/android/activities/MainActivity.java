@@ -29,13 +29,16 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -67,6 +70,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
 
     public static String sessionId = null;
     public static String searchid;
+    public static String arrive = "Nepřijedu";
     public static String endPoint;
     public static String StatusMessages = null;
     public static ArrayList<Waypoint> waypoints;
@@ -144,10 +148,11 @@ public class MainActivity extends Activity implements LocationListener, GetReque
     @Override
     protected void onCreate(Bundle savedInstanceState) throws SecurityException {
         super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_ACTION_BAR);
         setPermissions();
         setContentView(R.layout.activity_main);
         extractGuiItems();
-        mStatusText.setText(R.string.mode_sleeping);
+        mDataText.setText(R.string.mode_sleeping);
         setSearchTimer();
         context = this.getApplicationContext();
         notificator.setContext(context);
@@ -155,6 +160,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         endPoint = sharedPrefs.getString("endpoint", getString(R.string.pref_default_endpoint));
         locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        mStatusText.setMovementMethod(new ScrollingMovementMethod());
     }
 
     /**
@@ -240,7 +246,6 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         errorsCount = 0;
 
         mode = RequestMode.TRACKING;
-        mStatusText.setText(R.string.mode_tracking);
 
         sessionId = null;
         waypoints = new ArrayList<>();
@@ -278,6 +283,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
      * @param result response from the server
      */
     public void processResponse(String result) {
+        mStatusText.append("\n" + result);
         switch (mode) {
             case SLEEPING:
                 processSearchesResponse(result);
@@ -289,13 +295,13 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                 processSelectedResponse(result);
                 break;
             case READY_FOR_TRACKING:
-                processTrackingResponse(result);
+                processReadyForTrackingResponse(result);
                 break;
             case TRACKING:
                 processTrackingResponse(result);
                 break;
             default:
-                mStatusText.setText(R.string.error_unexpected);
+                mDataText.setText(R.string.error_unexpected);
         }
 
     }
@@ -334,7 +340,28 @@ public class MainActivity extends Activity implements LocationListener, GetReque
             errorsCount++;
             DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
             Date date = new Date();
-            mStatusText.setText(getString(R.string.connection_error) + " v " + dateFormat.format(date) + ". Celkem chyb: " + errorsCount);
+            mStatusText.append("\n" + getString(R.string.connection_error) + " v " + dateFormat.format(date) + ". Celkem chyb: " + errorsCount);
+            setInfo();
+        }
+    }
+
+    private void processReadyForTrackingResponse(String result) {
+        if (result != null) {
+            if (result.startsWith("<>")) {
+                notificator.playRing();
+                Toast toast = Toast.makeText(MainActivity.this, R.string.on_duty, Toast.LENGTH_LONG);
+                toast.show();
+                connect();
+                menu.findItem(R.id.connect_disconnect_action).setTitle(R.string.disconnect);
+            } else if (result.startsWith("!")) {
+                goToSleep();
+            }
+        } else {
+            //The response is null
+            errorsCount++;
+            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+            Date date = new Date();
+            mStatusText.append("\n" + getString(R.string.connection_error) + " v " + dateFormat.format(date) + ". Celkem chyb: " + errorsCount);
             setInfo();
         }
     }
@@ -362,7 +389,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                 if (result.startsWith("#")) {
                     // the coordinates where saved at the server
                     mode = RequestMode.WAITING;
-                    mStatusText.setText(R.string.mode_waiting);
+                    mDataText.setText(R.string.mode_waiting);
                     // starts new timer with more often check
                     setCallOnDutyTimer();
                 }
@@ -417,11 +444,16 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         if (result != null) {
             if (!result.isEmpty() && RequestMode.SELECTED == mode) {
                 // the searchid was saved at the server
-                SharedPreferences.Editor editor = sharedPrefs.edit();
-                editor.putString("searchid", searchid);
-                editor.commit();
-                mode = RequestMode.READY_FOR_TRACKING;
-                mStatusText.setText(R.string.mode_ready_for_tracking);
+                if (result.startsWith("@")) {
+                    SharedPreferences.Editor editor = sharedPrefs.edit();
+                    editor.putString("searchid", searchid);
+                    editor.commit();
+                    mode = RequestMode.READY_FOR_TRACKING;
+                    mDataText.setText(R.string.mode_ready_for_tracking);
+                } else if (result.startsWith("!")) {
+                    mode = RequestMode.SLEEPING;
+                    mDataText.setText(R.string.mode_sleeping);
+                }
             }
         }
     }
@@ -483,7 +515,10 @@ public class MainActivity extends Activity implements LocationListener, GetReque
             sendGetRequest(endPoint + "operation=searches&id=" + id);
         }
         if (id != null && RequestMode.SELECTED == mode) {
-            sendGetRequest(endPoint + "operation=searches&id=" + id + "&searchid=" + searchid);
+            sendGetRequest(endPoint + "operation=searches&id=" + id + "&searchid=" + searchid + "&arrive=" + arrive);
+        }
+        if (id != null && RequestMode.READY_FOR_TRACKING == mode) {
+            sendGetRequest(endPoint + "operation=searches&id=" + id);
         }
     }
 
@@ -533,8 +568,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         }
         callOnDuty = null;
         mode = RequestMode.SLEEPING;
-        mStatusText.setText(R.string.mode_sleeping);
-        mDataText.setText("");
+        mDataText.setText(R.string.mode_sleeping);
     }
 
     /**
@@ -758,6 +792,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         GetRequest getRequest = new GetRequest();
         getRequest.setActivity(this);
         getRequest.execute(url);
+        mStatusText.append("\n" + url);
     }
 
     /**
