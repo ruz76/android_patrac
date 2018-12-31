@@ -59,6 +59,8 @@ import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequest;
 import cz.vsb.gis.ruz76.patrac.android.domain.Message;
 import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
 import cz.vsb.gis.ruz76.patrac.android.domain.Waypoint;
+import cz.vsb.gis.ruz76.patrac.android.helpers.LogHelper;
+import cz.vsb.gis.ruz76.patrac.android.helpers.Network;
 import cz.vsb.gis.ruz76.patrac.android.helpers.Notificator;
 
 /**
@@ -75,10 +77,14 @@ public class MainActivity extends Activity implements LocationListener, GetReque
     public static String StatusMessages = null;
     public static ArrayList<Waypoint> waypoints;
     public static RequestMode mode = RequestMode.SLEEPING;
+    public static boolean sendingLocation = false;
+    public static boolean readingMessage = false;
 
+    private String searchDescription = "";
     private TextView mDataText;
     private TextView mStatusText;
     private ListView messagesListView;
+    private TextView mWelcomeText;
     private Intent callOnDuty;
 
     private double lat = 0;
@@ -150,17 +156,25 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_ACTION_BAR);
         setPermissions();
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         setContentView(R.layout.activity_main);
         extractGuiItems();
         mDataText.setText(R.string.mode_sleeping);
         setSearchTimer();
         context = this.getApplicationContext();
         notificator.setContext(context);
-        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         endPoint = sharedPrefs.getString("endpoint", getString(R.string.pref_default_endpoint));
         locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         mStatusText.setMovementMethod(new ScrollingMovementMethod());
+        mStatusText.setOnLongClickListener(new View.OnLongClickListener() {
+            public boolean onLongClick(View arg0) {
+                Toast.makeText(getApplicationContext(), "Long Clicked " , Toast.LENGTH_SHORT).show();
+                Intent logView = new Intent(MainActivity.this, LogActivity.class);
+                startActivity(logView);
+                return false;
+            }
+        });
     }
 
     /**
@@ -214,20 +228,29 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         mDataText = (TextView) findViewById(R.id.data_text);
         mStatusText = (TextView) findViewById(R.id.status_text);
         messagesListView = (ListView) findViewById(R.id.messagesListView);
+        mWelcomeText = (TextView) findViewById(R.id.intro_text);
+        String systemid = sharedPrefs.getString("id", null);
+        if (systemid != null) {
+            mWelcomeText.setText(R.string.welcome_message_registered);
+        }
+        if (!Network.getInstance().isNetworkAvailable()) {
+            mWelcomeText.append("\n" + getString(R.string.turn_on_internet_connection));
+        }
     }
 
     /**
      * Sets or requests permissions for the application.
      */
     private void setPermissions() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+        boolean permissionsNotSets = true;
+        while (permissionsNotSets) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNotSets = true;
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+            } else {
+                permissionsNotSets = false;
+            }
         }
     }
 
@@ -283,7 +306,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
      * @param result response from the server
      */
     public void processResponse(String result) {
-        mStatusText.append("\n" + result);
+        LogHelper.i("RESULT", result);
         switch (mode) {
             case SLEEPING:
                 processSearchesResponse(result);
@@ -323,26 +346,38 @@ public class MainActivity extends Activity implements LocationListener, GetReque
             if (result.startsWith("ID:")) {
                 // We have obtained session id, so tour first location is saved as well
                 sendPositionCount++;
+                sendingLocation = false;
                 sessionId = result.substring(3);
             } else if (result.startsWith("M")) {
                 // We have obtained new message
+                readingMessage = false;
                 processMessage(result);
             } else if (result.startsWith("P")) {
                 // We have obtained information about number of saved positions
                 // We do not check it, it should be OK.
+                sendingLocation = false;
                 sendPositionCount = loggedPositionCount;
                 setInfo();
             } else if (result.startsWith("!")) {
                 goToSleep();
+            } else if (result.isEmpty()) {
+                readingMessage = false;
             }
         } else {
-            //The response is null
-            errorsCount++;
-            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-            Date date = new Date();
-            mStatusText.append("\n" + getString(R.string.connection_error) + " v " + dateFormat.format(date) + ". Celkem chyb: " + errorsCount);
-            setInfo();
+            sendingLocation = false;
+            readingMessage = false;
+            showErrorConnection();
         }
+    }
+
+    private void showErrorConnection() {
+        //The response is null
+        errorsCount++;
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        Date date = new Date();
+        mStatusText.append("\n" + getString(R.string.connection_error) + " v " + dateFormat.format(date) + ". Celkem chyb: " + errorsCount);
+        LogHelper.e("ERROR", "Result is null");
+        setInfo();
     }
 
     private void processReadyForTrackingResponse(String result) {
@@ -352,17 +387,17 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                 Toast toast = Toast.makeText(MainActivity.this, R.string.on_duty, Toast.LENGTH_LONG);
                 toast.show();
                 connect();
+                if (result.split(";").length > 1) {
+                    searchDescription = result.split(";")[1];
+                }
+                mWelcomeText.setText(getString(R.string.on_duty) + " " + searchDescription);
                 menu.findItem(R.id.connect_disconnect_action).setTitle(R.string.disconnect);
             } else if (result.startsWith("!")) {
                 goToSleep();
             }
         } else {
             //The response is null
-            errorsCount++;
-            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-            Date date = new Date();
-            mStatusText.append("\n" + getString(R.string.connection_error) + " v " + dateFormat.format(date) + ". Celkem chyb: " + errorsCount);
-            setInfo();
+            showErrorConnection();
         }
     }
 
@@ -382,7 +417,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                 if (result.startsWith("*")) {
                     // there is a new search
                     String id = sharedPrefs.getString("id", null);
-                    if (id != null) {
+                    if (id != null && Network.getInstance().isNetworkAvailable()) {
                         sendGetRequest(endPoint + "operation=searches&id=" + id + "&lat=" + getShortCoord(latFromListener) + "&lon=" + getShortCoord(lonFromListener));
                     }
                 }
@@ -396,12 +431,12 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                 if (result.startsWith("!")) {
                     // we are in sleeping mode, but server does not know
                     String id = sharedPrefs.getString("id", null);
-                    if (id != null) {
+                    if (id != null && Network.getInstance().isNetworkAvailable()) {
                         sendGetRequest(endPoint + "operation=changestatus&status_to=sleeping&id=" + id);
                     }
                 }
             }
-            if (result.isEmpty()) {
+            if (result.isEmpty() && RequestMode.SLEEPING != mode) {
                 goToSleep();
             }
         }
@@ -427,6 +462,8 @@ public class MainActivity extends Activity implements LocationListener, GetReque
                     callOnDuty = new Intent(MainActivity.this, CallOnDutyActivity.class);
                     callOnDuty.putExtra("searches", searches);
                     startActivity(callOnDuty);
+                } else {
+                    callOnDuty.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                 }
             }
         }
@@ -486,7 +523,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
 
     private void goToSleep() {
         String id = sharedPrefs.getString("id", null);
-        if (id != null) {
+        if (id != null && Network.getInstance().isNetworkAvailable()) {
             sendGetRequest(endPoint + "operation=changestatus&status_to=sleeping&id=" + id);
             disconnect();
             menu.findItem(R.id.connect_disconnect_action).setTitle(R.string.connect);
@@ -501,8 +538,18 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         if (id != null
                 && (RequestMode.SLEEPING == mode
                 || RequestMode.READY_FOR_TRACKING == mode
-                || RequestMode.TRACKING == mode)) {
+                || RequestMode.TRACKING == mode) && Network.getInstance().isNetworkAvailable()) {
             sendGetRequest(endPoint + "operation=searches&id=" + id);
+        }
+        if (!Network.getInstance().isNetworkAvailable()) {
+            Toast toast = Toast.makeText(MainActivity.this, R.string.turn_on_internet_connection, Toast.LENGTH_LONG);
+            toast.show();
+        }
+        if (id != null && RequestMode.SLEEPING == mode) {
+            mWelcomeText.setText(R.string.welcome_message_registered);
+        }
+        if (id != null && RequestMode.TRACKING == mode && !searchDescription.isEmpty()) {
+            mWelcomeText.setText(getString(R.string.on_duty) + " " + searchDescription);
         }
     }
 
@@ -511,13 +558,13 @@ public class MainActivity extends Activity implements LocationListener, GetReque
      */
     public void checkCallOnDuty() {
         String id = sharedPrefs.getString("id", null);
-        if (id != null && RequestMode.WAITING == mode) {
+        if (id != null && RequestMode.WAITING == mode && Network.getInstance().isNetworkAvailable()) {
             sendGetRequest(endPoint + "operation=searches&id=" + id);
         }
-        if (id != null && RequestMode.SELECTED == mode) {
+        if (id != null && RequestMode.SELECTED == mode && Network.getInstance().isNetworkAvailable()) {
             sendGetRequest(endPoint + "operation=searches&id=" + id + "&searchid=" + searchid + "&arrive=" + arrive);
         }
-        if (id != null && RequestMode.READY_FOR_TRACKING == mode) {
+        if (id != null && RequestMode.READY_FOR_TRACKING == mode && Network.getInstance().isNetworkAvailable()) {
             sendGetRequest(endPoint + "operation=searches&id=" + id);
         }
     }
@@ -568,7 +615,14 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         }
         callOnDuty = null;
         mode = RequestMode.SLEEPING;
+        searchDescription = "";
         mDataText.setText(R.string.mode_sleeping);
+        String systemid = sharedPrefs.getString("id", null);
+        if (systemid != null) {
+            mWelcomeText.setText(R.string.welcome_message_registered);
+        } else {
+            mWelcomeText.setText(R.string.welcome_message_anonymous);
+        }
     }
 
     /**
@@ -579,7 +633,9 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         String systemid = sharedPrefs.getString("id", null);
         String user_name = sharedPrefs.getString("user_name", "NN " + Math.round(Math.random() * 10000));
         try {
-            sendGetRequest(endPoint + "operation=getid&searchid=" + searchid + "&user_name=" + URLEncoder.encode(user_name, "UTF-8") + "&systemid=" + systemid + "&lat=" + getShortCoord(lat) + "&lon=" + getShortCoord(lon));
+            if (Network.getInstance().isNetworkAvailable()) {
+                sendGetRequest(endPoint + "operation=getid&searchid=" + searchid + "&user_name=" + URLEncoder.encode(user_name, "UTF-8") + "&systemid=" + systemid + "&lat=" + getShortCoord(lat) + "&lon=" + getShortCoord(lon));
+            }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -621,23 +677,31 @@ public class MainActivity extends Activity implements LocationListener, GetReque
      * Sends current location or cached 100 locations to the server.
      */
     private void sendTrack() {
-        if ((sendPositionCount == (loggedPositionCount - 1))) {
+        if ((sendPositionCount == (loggedPositionCount - 1)) && Network.getInstance().isNetworkAvailable()) {
+            sendingLocation = true;
             sendGetRequest(endPoint + "operation=sendlocation&searchid=" + searchid + "&id=" + sessionId + "&lat=" + getShortCoord(lat) + "&lon=" + getShortCoord(lon));
-        } else {
+        }
+        if ((sendPositionCount < (loggedPositionCount - 1)) && Network.getInstance().isNetworkAvailable()) {
             //Some time out of network. Must send more coords from memory.
             //TODO change to POST to be able send more than 100 coords
             String notSendedCoords = "";
             int startPosition = sendPositionCount + 1;
-            //When is more than 100 not sent positions in memory then only last 100 is sent to server
-            if ((MainActivity.waypoints.size() - startPosition) > 100) {
-                startPosition = MainActivity.waypoints.size() - 100;
-            }
-            for (int i = startPosition; i < MainActivity.waypoints.size(); i++) {
-                Waypoint wp = MainActivity.waypoints.get(i);
-                notSendedCoords += getShortCoord(wp.getLon()) + ";" + getShortCoord(wp.getLat()) + ",";
+            //When is more than 50 not sent positions in memory then points are generalized to last 100 is sent to server
+            if ((MainActivity.waypoints.size() - startPosition) > 50) {
+                int step = (int) Math.ceil((MainActivity.waypoints.size() - startPosition) / 50);
+                for (int i = startPosition; i < MainActivity.waypoints.size(); i+=step) {
+                    Waypoint wp = MainActivity.waypoints.get(i);
+                    notSendedCoords += getShortCoord(wp.getLon()) + ";" + getShortCoord(wp.getLat()) + ",";
+                }
+            } else {
+                for (int i = startPosition; i < MainActivity.waypoints.size(); i++) {
+                    Waypoint wp = MainActivity.waypoints.get(i);
+                    notSendedCoords += getShortCoord(wp.getLon()) + ";" + getShortCoord(wp.getLat()) + ",";
+                }
             }
             if (notSendedCoords.length() > 10) {
                 notSendedCoords = notSendedCoords.substring(0, notSendedCoords.length() - 2);
+                sendingLocation = true;
                 sendGetRequest(endPoint + "operation=sendlocations&searchid=" + searchid + "&id=" + sessionId + "&coords=" + notSendedCoords);
             }
         }
@@ -662,19 +726,23 @@ public class MainActivity extends Activity implements LocationListener, GetReque
      */
     private void sendCoordinates() throws SecurityException {
         boolean logit = trackLocation();
-        if (MainActivity.StatusMessages != null) mStatusText.setText(MainActivity.StatusMessages);
+        if (MainActivity.StatusMessages != null) {
+            mStatusText.append("\n" + MainActivity.StatusMessages);
+            MainActivity.StatusMessages = null;
+        }
         // First we have to obtain the sessionId.
         if (sessionId == null) {
             getSessionId();
         } else {
             // if the position has not changed we do not send it to the server
             if (logit) {
-                sendTrack();
+                if (!sendingLocation) {
+                    sendTrack();
+                }
             } else {
                 showInfoSamePosition();
             }
         }
-
     }
 
     /**
@@ -698,11 +766,12 @@ public class MainActivity extends Activity implements LocationListener, GetReque
      */
     private void downloadMessage() {
         // we do not have session id yet, so ask for it
-        if (sessionId == null) {
+        if (sessionId == null && Network.getInstance().isNetworkAvailable()) {
             sendGetRequest(endPoint + "operation=getid&searchid=" + searchid);
         } else {
             boolean messages_switch = sharedPrefs.getBoolean("messages_switch", true);
-            if (messages_switch) {
+            if (messages_switch && !readingMessage && Network.getInstance().isNetworkAvailable()) {
+                readingMessage = true;
                 sendGetRequest(endPoint + "operation=getmessages&searchid=" + searchid + "&id=" + sessionId);
             }
         }
@@ -725,10 +794,14 @@ public class MainActivity extends Activity implements LocationListener, GetReque
             //Shared file
             String shared = items[5].replace("\n", "");
             if (shared.equalsIgnoreCase("1")) {
-                downloadFromUrl(endPoint + "operation=getfile&searchid=" + searchid + "&id=shared&filename=" + items[3], items[3]);
+                if (Network.getInstance().isNetworkAvailable()) {
+                    downloadFromUrl(endPoint + "operation=getfile&searchid=" + searchid + "&id=shared&filename=" + items[3], items[3]);
+                }
             } else {
                 //Individual file
-                downloadFromUrl(endPoint + "operation=getfile&searchid=" + searchid + "&id=" + sessionId + "&filename=" + items[3], items[3]);
+                if (Network.getInstance().isNetworkAvailable()) {
+                    downloadFromUrl(endPoint + "operation=getfile&searchid=" + searchid + "&id=" + sessionId + "&filename=" + items[3], items[3]);
+                }
             }
         } else {
             messages_list.add(0, items[6] + ": " + items[4].substring(0, items[4].length() - 3).split(" ")[1] + ": " + short_message);
@@ -792,7 +865,8 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         GetRequest getRequest = new GetRequest();
         getRequest.setActivity(this);
         getRequest.execute(url);
-        mStatusText.append("\n" + url);
+        //mStatusText.append("\n" + url.substring(url.indexOf("?")));
+        LogHelper.i("REQUEST", url.substring(url.indexOf("?")));
     }
 
     /**
@@ -806,7 +880,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
 
                 @Override
                 public void run() {
-                    sendCoordinates();
+                   sendCoordinates();
                 }
             });
         }

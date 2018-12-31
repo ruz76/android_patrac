@@ -63,12 +63,19 @@ public class GetRequest extends AsyncTask<String, String, String> {
             return stringBuilder.toString();
 
         } catch (Exception e) {
-            if (textStatus != null) {
+            //TODO show error cause exception from MapsActivity
+            /*if (textStatus != null) {
                 textStatus.setText(R.string.download_error);
-            }
+            }*/
             MainActivity.StatusMessages = e.getMessage();
-            Log.e("Error: ", e.getMessage());
-            cancel(true);
+            LogHelper.e("GetRequest: ", f_url[0] + " " + e.getMessage());
+            if (f_url[0].contains("getmessages")) {
+                MainActivity.readingMessage = false;
+            }
+            if (f_url[0].contains("sendlocation")) {
+                MainActivity.sendingLocation = false;
+            }
+            //cancel(true);
             return null;
         }
     }

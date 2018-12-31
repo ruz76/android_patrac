@@ -32,6 +32,7 @@ import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
 import cz.vsb.gis.ruz76.patrac.android.R;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequest;
+import cz.vsb.gis.ruz76.patrac.android.helpers.Network;
 import cz.vsb.gis.ruz76.patrac.android.listeners.GpxListener;
 
 /**
@@ -49,6 +50,7 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
     private Context context;
     private Marker startMarker;
     private List<Overlay> overlays;
+    private boolean readingLocations = false;
 
     private Timer timerRefreshPositions;
     MapsActivity.RefreshPositions myRefreshPositionsTask;
@@ -209,6 +211,7 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
 
     @Override
     public void processResponse(String result) {
+        readingLocations = false;
         if (result != null) {
             if (overlays != null) {
                 map.getOverlays().removeAll(overlays);
@@ -246,7 +249,10 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
 
                 @Override
                 public void run() {
-                    getLocations();
+                    if (!readingLocations && Network.getInstance().isNetworkAvailable()) {
+                        readingLocations = true;
+                        getLocations();
+                    }
                 }
             });
         }

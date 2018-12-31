@@ -3,6 +3,8 @@ package cz.vsb.gis.ruz76.patrac.android.activities;
 import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -42,6 +44,7 @@ import cz.vsb.gis.ruz76.patrac.android.helpers.AdapterHelper;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
 import cz.vsb.gis.ruz76.patrac.android.R;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequest;
+import cz.vsb.gis.ruz76.patrac.android.helpers.Network;
 
 public class MessageSendActivity extends FragmentActivity implements GetRequestUpdate {
 
@@ -93,7 +96,12 @@ public class MessageSendActivity extends FragmentActivity implements GetRequestU
                 message = messageTextSend.getText().toString();
                 try {
                     message = URLEncoder.encode(message, "UTF-8");
-                    sendMessage();
+                    if (Network.getInstance().isNetworkAvailable()) {
+                        sendMessage();
+                    } else {
+                        Toast toast = Toast.makeText(MessageSendActivity.this, getString(R.string.message_not_connected), Toast.LENGTH_LONG);
+                        toast.show();
+                    }
                     //new SendMessageToURL().execute(R.string.pref_default_endpoint + "operation=insertmessage&searchid=" + MainActivity.searchid + "&from_id=" + MainActivity.sessionId + "&message=" + message + "&id=coordinator" + MainActivity.searchid);
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();

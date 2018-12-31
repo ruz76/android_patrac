@@ -39,18 +39,11 @@
             android:orientation="horizontal">
 
             <RadioButton
-                android:id="@+id/radioButton30"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="true"
-                android:text="@string/arrive30m" />
-
-            <RadioButton
                 android:id="@+id/radioButton60"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:checked="true"
                 android:text="@string/arrive60m" />
 
             <RadioButton
@@ -58,14 +51,36 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:checked="false"
                 android:text="@string/arrive120m" />
 
             <RadioButton
-                android:id="@+id/radioButtonGt120"
+                android:id="@+id/radioButton180"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/arriveGt120m" />
+                android:text="@string/arrive180m" />
+
+            <RadioButton
+                android:id="@+id/radioButton240"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/arrive240m" />
+
+            <RadioButton
+                android:id="@+id/radioButton300"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/arrive300m" />
+
+            <RadioButton
+                android:id="@+id/radioButtonGt300"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/arriveGt300m" />
         </RadioGroup>
 
         <Button

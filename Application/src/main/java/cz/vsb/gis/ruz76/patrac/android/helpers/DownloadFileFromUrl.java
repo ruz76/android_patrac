@@ -93,7 +93,7 @@ public class DownloadFileFromUrl extends AsyncTask<String, String, String> {
                 textStatus.setText(R.string.download_error);
             }
             MainActivity.StatusMessages = e.getMessage();
-            Log.e("Error: ", e.getMessage());
+            LogHelper.e("Download from url: ", f_url[0] + " " + e.getMessage());
             cancel(true);
         }
         return null;

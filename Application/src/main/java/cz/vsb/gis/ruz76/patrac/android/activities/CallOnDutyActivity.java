@@ -21,11 +21,15 @@ import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
 
 public class CallOnDutyActivity extends Activity {
 
+    // array of active searches
     private String[] searches;
+    // list of active searches
     private List<String> searchesList;
-    // Create an ArrayAdapter from List
+    // array adapter for list of searches
     private ArrayAdapter<String> arrayAdapter;
+    // list view with searches
     private ListView listViewSearches;
+    // user has selected the search
     private boolean searchWasSelected = false;
 
 
@@ -63,7 +67,9 @@ public class CallOnDutyActivity extends Activity {
         searches = bundle.getStringArray("searches");
         searchesList = new ArrayList<>();
         for (int i = 0; i < searches.length; i++) {
-            searchesList.add(searches[i].split(";")[1]);
+            if (searches[i].split(";").length > 1) {
+                searchesList.add(searches[i].split(";")[1]);
+            }
         }
         arrayAdapter = new ArrayAdapter<String>
                 (this, android.R.layout.simple_list_item_1, searchesList);
@@ -84,6 +90,13 @@ public class CallOnDutyActivity extends Activity {
         buttonArrive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // it there are not any searches in the list we
+                if (searches.length < 1) {
+                    Toast toast = Toast.makeText(CallOnDutyActivity.this, R.string.error_unexpected, Toast.LENGTH_LONG);
+                    toast.show();
+                    finish();
+                }
+                // if the search was not previously selected we select first
                 if (!searchWasSelected) {
                     MainActivity.searchid = searches[0].split(";")[0];
                 }
@@ -91,6 +104,7 @@ public class CallOnDutyActivity extends Activity {
                 MainActivity.arrive = getSelectedTime();
                 Toast toast = Toast.makeText(CallOnDutyActivity.this, R.string.call_on_duty_selected, Toast.LENGTH_LONG);
                 toast.show();
+                finish();
             }
         });
 
@@ -102,6 +116,7 @@ public class CallOnDutyActivity extends Activity {
                 MainActivity.arrive = "NKD";
                 Toast toast = Toast.makeText(CallOnDutyActivity.this, R.string.call_on_duty_not_selected, Toast.LENGTH_LONG);
                 toast.show();
+                finish();
             }
         });
 
@@ -112,11 +127,7 @@ public class CallOnDutyActivity extends Activity {
     }
 
     private String getSelectedTime() {
-        RadioButton rb = (RadioButton) findViewById(R.id.radioButton30);
-        if (rb.isChecked()) {
-            return "30m";
-        }
-        rb = (RadioButton) findViewById(R.id.radioButton60);
+        RadioButton rb = (RadioButton) findViewById(R.id.radioButton60);
         if (rb.isChecked()) {
             return "60m";
         }
@@ -124,10 +135,22 @@ public class CallOnDutyActivity extends Activity {
         if (rb.isChecked()) {
             return "120m";
         }
-        rb = (RadioButton) findViewById(R.id.radioButtonGt120);
+        rb = (RadioButton) findViewById(R.id.radioButton180);
         if (rb.isChecked()) {
-            return "v120m";
+            return "180m";
         }
-        return "30m";
+        rb = (RadioButton) findViewById(R.id.radioButton240);
+        if (rb.isChecked()) {
+            return "240m";
+        }
+        rb = (RadioButton) findViewById(R.id.radioButton300);
+        if (rb.isChecked()) {
+            return "300m";
+        }
+        rb = (RadioButton) findViewById(R.id.radioButtonGt300);
+        if (rb.isChecked()) {
+            return "v300m";
+        }
+        return "60m";
     }
 }

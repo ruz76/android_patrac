@@ -15,8 +15,11 @@
   -->
 
 <resources>
-    <string name="welcome_message">
-        Zapněte GPS. Zapněte datové připojení. V nastavení vyplňte jméno a naskenujte kód pátrání. Zmáčkněte tlačítko připojit.
+    <string name="welcome_message_anonymous">
+        V nastavení vyplňte jméno a naskenujte kód pátrání. Zmáčkněte tlačítko připojit.
+    </string>
+    <string name="welcome_message_registered">
+        Jste registrovaným uživatelem. Vyčkejte prosím na pozvání k pátrání.
     </string>
     <string name="connect">Připojit</string>
     <string name="disconnect">Odpojit</string>
@@ -35,6 +38,9 @@
     <string name="longitude_label">Longitude</string>
     <string name="latitude_label">Latitude</string>
     <string name="same_position_label">Pozice je stejná v čase</string>
+    <string name="no_internet_connection">Není internetové připojení</string>
+    <string name="turn_on_internet_connection">Zapněte internetové připojení</string>
+    <string name="turn_on_location">Zapněte určování polohy</string>
 
     <!-- Strings related to download -->
     <string name="downloaded">Staženo</string>
@@ -191,11 +197,14 @@
 
     <string name="error_unexpected">Jsem zmaten. Toto jsem nečekal. Raději mě vypni a zapni.</string>
     <string name="buttonArrive">Mohu přijet do</string>
-    <string name="arrive30m">30 m</string>
     <string name="arrive60m">1 h</string>
     <string name="arrive120m">2 h</string>
-    <string name="arriveGt120m"><![CDATA[> 2 h]]></string>
+    <string name="arrive180m">3 h</string>
+    <string name="arrive240m">4 h</string>
+    <string name="arrive300m">5 h</string>
+    <string name="arriveGt300m"><![CDATA[> 5 h]]></string>
     <string name="buttonNotArrive">Nemohu přijet</string>
+    <string name="title_activity_log_acivity">Log</string>
 
 </resources>
 

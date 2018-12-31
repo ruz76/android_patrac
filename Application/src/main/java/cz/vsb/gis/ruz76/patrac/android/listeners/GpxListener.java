@@ -22,6 +22,7 @@ import cz.vsb.gis.ruz76.patrac.android.activities.MapsActivity;
 import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
 import cz.vsb.gis.ruz76.patrac.android.domain.Waypoint;
 import cz.vsb.gis.ruz76.patrac.android.helpers.DownloadFileFromUrl;
+import cz.vsb.gis.ruz76.patrac.android.helpers.LogHelper;
 
 /**
  * Created by jencek on 10.10.18.
@@ -99,6 +100,7 @@ public class GpxListener implements AdapterView.OnItemClickListener {
             }
             mTextStatus.setText(R.string.ready_for_download);
         } else {
+            LogHelper.w("showLocalGpx", "Unable to open file: " + path);
             mTextStatus.setText(R.string.error_data_download);
         }
     }
