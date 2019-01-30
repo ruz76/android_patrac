@@ -29,6 +29,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
+import cz.vsb.gis.ruz76.patrac.android.domain.Status;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
 import cz.vsb.gis.ruz76.patrac.android.R;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequest;
@@ -183,7 +184,7 @@ public class MapsActivity extends Activity implements LocationListener, GetReque
         GetRequest getRequest = new GetRequest();
         getRequest.setActivity(this);
         getRequest.setTextStatus(mTextStatus);
-        getRequest.execute(MainActivity.endPoint + "operation=getlocations&searchid=" + MainActivity.searchid);
+        getRequest.execute(Status.endPoint + "operation=getlocations&searchid=" + Status.searchid);
     }
 
     @Override

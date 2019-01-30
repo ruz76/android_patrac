@@ -21,7 +21,7 @@ import java.net.URLConnection;
 import java.util.Arrays;
 
 import cz.vsb.gis.ruz76.patrac.android.R;
-import cz.vsb.gis.ruz76.patrac.android.activities.MainActivity;
+import cz.vsb.gis.ruz76.patrac.android.domain.Status;
 
 /**
  * Background Async Task to download file.
@@ -89,10 +89,7 @@ public class DownloadFileFromUrl extends AsyncTask<String, String, String> {
             output.close();
             input.close();
         } catch (Exception e) {
-            if (textStatus != null) {
-                textStatus.setText(R.string.download_error);
-            }
-            MainActivity.StatusMessages = e.getMessage();
+            cz.vsb.gis.ruz76.patrac.android.domain.Status.StatusMessages = e.getMessage();
             LogHelper.e("Download from url: ", f_url[0] + " " + e.getMessage());
             cancel(true);
         }
@@ -141,6 +138,17 @@ public class DownloadFileFromUrl extends AsyncTask<String, String, String> {
                     textStatus.setText(R.string.error_data_download);
                 }
             }
+        }
+    }
+
+    @Override
+    protected void onCancelled() {
+        handleOnCancelled();
+    }
+
+    private void handleOnCancelled() {
+        if (textStatus != null) {
+            textStatus.setText(R.string.download_error);
         }
     }
 

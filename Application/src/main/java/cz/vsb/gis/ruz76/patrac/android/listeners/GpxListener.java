@@ -20,6 +20,7 @@ import cz.vsb.gis.ruz76.patrac.android.R;
 import cz.vsb.gis.ruz76.patrac.android.activities.MainActivity;
 import cz.vsb.gis.ruz76.patrac.android.activities.MapsActivity;
 import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
+import cz.vsb.gis.ruz76.patrac.android.domain.Status;
 import cz.vsb.gis.ruz76.patrac.android.domain.Waypoint;
 import cz.vsb.gis.ruz76.patrac.android.helpers.DownloadFileFromUrl;
 import cz.vsb.gis.ruz76.patrac.android.helpers.LogHelper;
@@ -51,7 +52,7 @@ public class GpxListener implements AdapterView.OnItemClickListener {
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (MainActivity.mode != RequestMode.TRACKING) {
+        if (Status.mode != RequestMode.TRACKING) {
             mTextStatus.setText(mapsActivity.getString(R.string.not_connected));
             return;
         }
@@ -71,12 +72,12 @@ public class GpxListener implements AdapterView.OnItemClickListener {
 
         if (position == 1) {
             mTextStatus.setText(R.string.downloading_wait);
-            downloadFromUrl(MainActivity.endPoint + "operation=getgpx_last&searchid=" + MainActivity.searchid, "server_last.gpx");
+            downloadFromUrl(Status.endPoint + "operation=getgpx_last&searchid=" + Status.searchid, "server_last.gpx");
         }
 
         if (position == 2) {
             mTextStatus.setText(R.string.downloading_wait);
-            downloadFromUrl(MainActivity.endPoint + "operation=getgpx&searchid=" + MainActivity.searchid, "server.gpx");
+            downloadFromUrl(Status.endPoint + "operation=getgpx&searchid=" + Status.searchid, "server.gpx");
         }
 
     }
@@ -106,8 +107,8 @@ public class GpxListener implements AdapterView.OnItemClickListener {
     }
 
     private int createLocalGpx() {
-        if (MainActivity.waypoints == null) return 1;
-        if (MainActivity.waypoints.size() < 2) return 1;
+        if (Status.waypoints == null) return 1;
+        if (Status.waypoints.size() < 2) return 1;
         String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).toString() + "/local.gpx";
         try {
             PrintStream local_gpx = new PrintStream(new FileOutputStream(path));
@@ -117,8 +118,8 @@ public class GpxListener implements AdapterView.OnItemClickListener {
             header += "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\"\n";
             header += "xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\"><trk><name>Toto zařízení</name><trkseg>\n";
             local_gpx.println(header);
-            for (int i=0; i < MainActivity.waypoints.size(); i++) {
-                Waypoint wp = MainActivity.waypoints.get(i);
+            for (int i=0; i < Status.waypoints.size(); i++) {
+                Waypoint wp = Status.waypoints.get(i);
                 SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
                 String timeutc = dateFormatGmt.format(wp.timeutc).toString().replaceAll(" ", "T") + "Z";

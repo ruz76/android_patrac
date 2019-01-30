@@ -58,7 +58,8 @@
             android:label="@string/title_activity_message_send" />
         <activity
             android:name=".activities.CallOnDutyActivity"
-            android:label="@string/title_activity_call_on_duty" />
+            android:label="@string/title_activity_call_on_duty"
+            android:launchMode="singleTask"/>
         <activity
             android:name=".activities.LogActivity"
             android:label="@string/title_activity_log_acivity"></activity>

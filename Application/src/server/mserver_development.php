@@ -83,7 +83,7 @@ function checkSystemId() {
 function getSearches() {
     checkSystemId();
 
-    $SQL = "SELECT id, status, searchid FROM system_users WHERE id = '".$_REQUEST["id"]."'";
+    $SQL = "SELECT id, status FROM system_users WHERE id = '".$_REQUEST["id"]."'";
     $res = mysql_query($SQL) or die("E;getSearches:0"); 
     $row = mysql_fetch_array($res);
 
@@ -139,7 +139,7 @@ function getSearches() {
     }
 
     if ($row["status"] == "onduty") {
-        echo "T;onduty;".$row["searchid"];
+        echo "T;onduty";
     }
 
     // calltojoin
@@ -295,7 +295,7 @@ function sendLocation() {
 	  echo "P;S:1";
     $SQL = "UPDATE users SET lat = ".$_REQUEST["lat"].", lon = ".$_REQUEST["lon"].", searchid = '".$_REQUEST["searchid"]."', dt_updated = utc_timestamp() WHERE id = '".$_REQUEST["id"]."'";
     mysql_query($SQL) or die("E;sendLocation:2");
-    $SQL = "UPDATE system_users su, users u SET su.status = CASE WHEN su.status <> 'released' THEN 'onduty' ELSE 'released' END WHERE u.system_user = su.id AND u.id = '".$_REQUEST["id"]."'";
+    $SQL = "UPDATE system_users su, users u SET su.status = 'onduty' WHERE u.system_user = su.id AND u.id = '".$_REQUEST["id"]."'";
     mysql_query($SQL) or die("E;sendLocations:3");
 	} else {
 	  echo "E;Incorrect input:".$_REQUEST["lat"]." ".$_REQUEST["lon"]."\n"; 
@@ -315,7 +315,7 @@ function sendLocations() {
 	    mysql_query($SQL) or die("E;sendLocations:1");
       $SQL = "UPDATE users SET lat = ".$coord[1].", lon = ".$coord[0].", searchid = '".$_REQUEST["searchid"]."',  dt_updated = utc_timestamp() WHERE id = '".$_REQUEST["id"]."'";
       mysql_query($SQL) or die("E;sendLocations:2");
-      $SQL = "UPDATE system_users su, users u SET su.status = CASE WHEN su.status <> 'released' THEN 'onduty' ELSE 'released' END WHERE u.system_user = su.id AND u.id = '".$_REQUEST["id"]."'";
+      $SQL = "UPDATE system_users su, users u SET su.status = 'onduty' WHERE u.system_user = su.id AND u.id = '".$_REQUEST["id"]."'";
       mysql_query($SQL) or die("E;sendLocations:3");
 	    $count++; 
 	  } else {

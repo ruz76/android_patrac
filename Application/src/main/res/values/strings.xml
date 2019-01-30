@@ -15,12 +15,11 @@
   -->
 
 <resources>
-    <string name="welcome_message_anonymous">
-        V nastavení vyplňte jméno a naskenujte kód pátrání. Zmáčkněte tlačítko připojit.
-    </string>
-    <string name="welcome_message_registered">
-        Jste registrovaným uživatelem. Vyčkejte prosím na pozvání k pátrání.
-    </string>
+    <string name="welcome_message_anonymous">"V nastavení vyplňte jméno a naskenujte kód pátrání. Zmáčkněte tlačítko připojit.\n    "</string>
+    <string name="welcome_message_registered">"Jste registrovaným uživatelem. Vyčkejte prosím na pozvání k pátrání nebo obnovení spojení. \n    "</string>
+
+    <string name="not_implemented">Funkce není zatím implementována</string>
+
     <string name="connect">Připojit</string>
     <string name="disconnect">Odpojit</string>
     <string name="settings">Nastavení</string>
@@ -47,7 +46,7 @@
     <string name="download_error">Chyba při stažení dat</string>
     <string name="preparing_data_open">Připravuji otevření dat</string>
     <string name="ready_for_download">Připraven</string>
-    <string name="error_data_download">Nepodařilo se stáhnout data. Připraven</string>
+    <string name="error_data_download">Nepodařilo se stáhnout data. Zkuste prosím znovu.</string>
 
     <!-- Strings related to maps -->
     <string name="tracks">Stopy a pozice</string>
@@ -90,9 +89,9 @@
     <string name="pref_default_display_name">Karel Vomáčka</string>
 
     <string name="pref_title_searchid">Identifikátor pátrání</string>
-    <string name="pref_default_searchid">AAA111BBB</string>
+    <string name="pref_default_searchid" translatable="false">AAA111BBB</string>
     <string name="pref_title_scan_searchid">Naskenovat identifikátor z QR kódu</string>
-    <string name="pref_scan_searchid">pref_scan_searchid</string>
+    <string name="pref_scan_searchid">Naskenovat identifikátor z QR kódu</string>
     <string name="pref_summary_scan_searchid">QR scan</string>
     <string name="pref_title_systemid">Systémový identifikátor</string>
     <string name="pref_scanner_not_found">Nebyl nalezen skener</string>
@@ -118,7 +117,7 @@
     <string name="pref_header_data_sync">Synchronizace</string>
 
     <string name="pref_title_endpoint">Adresa serveru</string>
-    <string name="pref_default_endpoint">http://gisak.vsb.cz/patrac/mserver.php?</string>
+    <string name="pref_default_endpoint" translatable="false">http://gisak.vsb.cz/patrac/mserver.php?</string>
 
     <string name="pref_title_sync_frequency">Frekvence přijímání zpráv</string>
     <string-array name="pref_sync_frequency_titles">
@@ -146,18 +145,6 @@
         <item>60</item>
     </string-array>
 
-    <string-array name="list_preference_entries">
-        <item>Entry 1</item>
-        <item>Entry 2</item>
-        <item>Entry 3</item>
-    </string-array>
-
-    <string-array name="list_preference_entry_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
     <string-array name="multi_select_list_preference_default_value" />
 
     <string name="pref_title_system_sync_settings">Nastavení synchronizace</string>
@@ -171,7 +158,7 @@
     <string name="pref_ringtone_silent">Ticho</string>
 
     <string name="pref_title_vibrate">Vibrace</string>
-    <string name="title_activity_maps">MapsActivity</string>
+    <string name="title_activity_maps">Mapy</string>
     <string name="title_activity_message_send">Zprávy</string>
 
     <string name="message_send">Odeslat</string>
@@ -180,6 +167,11 @@
     <string name="message_attachment_select">Vyberte přílohu</string>
     <string name="message_attachment_can_not_be_zero_length">nemůže mít nulovou velikost souboru</string>
     <string name="message_attachment_is_too_big">musí být menší než 10 MB</string>
+
+    <string name="log_send">Odeslat</string>
+    <string name="log_save">Uložit</string>
+    <string name="log_saved">Log byl uložen do:</string>
+    <string name="log_not_saved">Při uložení logu došlo k chybě</string>
 
     <string name="coordinator">Štáb</string>
 
@@ -205,6 +197,8 @@
     <string name="arriveGt300m"><![CDATA[> 5 h]]></string>
     <string name="buttonNotArrive">Nemohu přijet</string>
     <string name="title_activity_log_acivity">Log</string>
+    <string name="no_location">Nemám lokaci. Nemohu zaslat souřadnice.</string>
+    <string name="no_searchid">Identifikátor pátrání není nastaven. Nemohu se připojit.</string>
 
 </resources>
 

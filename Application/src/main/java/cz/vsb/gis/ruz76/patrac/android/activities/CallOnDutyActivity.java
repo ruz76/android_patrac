@@ -18,6 +18,7 @@ import java.util.List;
 
 import cz.vsb.gis.ruz76.patrac.android.R;
 import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
+import cz.vsb.gis.ruz76.patrac.android.domain.Status;
 
 public class CallOnDutyActivity extends Activity {
 
@@ -67,8 +68,8 @@ public class CallOnDutyActivity extends Activity {
         searches = bundle.getStringArray("searches");
         searchesList = new ArrayList<>();
         for (int i = 0; i < searches.length; i++) {
-            if (searches[i].split(";").length > 1) {
-                searchesList.add(searches[i].split(";")[1]);
+            if (searches[i].split(";").length > 2) {
+                searchesList.add(searches[i].split(";")[2]);
             }
         }
         arrayAdapter = new ArrayAdapter<String>
@@ -81,7 +82,7 @@ public class CallOnDutyActivity extends Activity {
         listViewSearches.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MainActivity.searchid = searches[position].split(";")[0];
+                Status.searchid = searches[position].split(";")[1];
                 searchWasSelected = true;
             }
         });
@@ -98,10 +99,10 @@ public class CallOnDutyActivity extends Activity {
                 }
                 // if the search was not previously selected we select first
                 if (!searchWasSelected) {
-                    MainActivity.searchid = searches[0].split(";")[0];
+                    Status.searchid = searches[0].split(";")[1];
                 }
-                MainActivity.mode = RequestMode.SELECTED;
-                MainActivity.arrive = getSelectedTime();
+                Status.mode = RequestMode.SELECTED;
+                Status.arrive = getSelectedTime();
                 Toast toast = Toast.makeText(CallOnDutyActivity.this, R.string.call_on_duty_selected, Toast.LENGTH_LONG);
                 toast.show();
                 finish();
@@ -112,8 +113,8 @@ public class CallOnDutyActivity extends Activity {
         buttonNotArrive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.mode = RequestMode.SELECTED;
-                MainActivity.arrive = "NKD";
+                Status.mode = RequestMode.SELECTED;
+                Status.arrive = "NKD";
                 Toast toast = Toast.makeText(CallOnDutyActivity.this, R.string.call_on_duty_not_selected, Toast.LENGTH_LONG);
                 toast.show();
                 finish();

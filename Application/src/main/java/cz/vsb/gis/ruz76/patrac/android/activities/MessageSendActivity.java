@@ -39,6 +39,7 @@ import java.util.List;
 import cz.msebera.android.httpclient.Header;
 import cz.vsb.gis.ruz76.patrac.android.adapters.UsersArrayAdapter;
 import cz.vsb.gis.ruz76.patrac.android.domain.RequestMode;
+import cz.vsb.gis.ruz76.patrac.android.domain.Status;
 import cz.vsb.gis.ruz76.patrac.android.domain.User;
 import cz.vsb.gis.ruz76.patrac.android.helpers.AdapterHelper;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
@@ -65,7 +66,7 @@ public class MessageSendActivity extends FragmentActivity implements GetRequestU
         setupActionBar();
 
         setUpListOfUsers();
-        sendGetRequest(MainActivity.endPoint + "operation=getlocations&searchid=" + MainActivity.searchid);
+        sendGetRequest(Status.endPoint + "operation=getlocations&searchid=" + Status.searchid);
     }
 
     /**
@@ -115,7 +116,7 @@ public class MessageSendActivity extends FragmentActivity implements GetRequestU
     }
 
     private void sendMessage() {
-        if (MainActivity.mode != RequestMode.TRACKING) {
+        if (Status.mode != RequestMode.TRACKING) {
             Toast toast = Toast.makeText(MessageSendActivity.this, getString(R.string.message_not_connected), Toast.LENGTH_LONG);
             toast.show();
             return;
@@ -143,8 +144,8 @@ public class MessageSendActivity extends FragmentActivity implements GetRequestU
 
         try {
             params.put("operation", "insertmessages");
-            params.put("searchid", MainActivity.searchid);
-            params.put("from_id", MainActivity.sessionId);
+            params.put("searchid", Status.searchid);
+            params.put("from_id", Status.sessionId);
             params.put("message", message);
             params.put("ids", ids);
             if (fileToUploadPath != null) {
@@ -222,7 +223,7 @@ public class MessageSendActivity extends FragmentActivity implements GetRequestU
         //https://medium.com/mindorks/custom-array-adapters-made-easy-b6c4930560dd
 
         users = new ArrayList<>();
-        User u = new User("coordinator" + MainActivity.searchid, "Štáb", false);
+        User u = new User("coordinator" + Status.searchid, "Štáb", false);
         users.add(u);
 
         usersNamesList = new ArrayList<>();

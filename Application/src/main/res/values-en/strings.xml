@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pátrač</string>
+    <string name="intro_message">This software is for monitoring andcomunicating in Search and Rescue operation.</string>
+    <string name="welcome_message_anonymous">Enter your name and scan search identifier in Settings. Tape Connect button.</string>
+    <string name="welcome_message_registered">You are registered user. Please wait for call on duty or restoring the session.</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="settings">Settings</string>
+    <string name="map_text">Map</string>
+    <string name="send_message_text">Send message</string>
+    <string name="connection_error">Connection error</string>
+    <string name="fetch_cancelled">Connection aborted</string>
+    <string name="title_activity_message_view">Message</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="positions_label">Locations obtained/logged/registred</string>
+    <string name="sessionid_label">SessionId</string>
+    <string name="searchid_label">SearchId</string>
+    <string name="longitude_label">Longitude</string>
+    <string name="latitude_label">Latitude</string>
+    <string name="same_position_label">"The location is same in time: "</string>
+    <string name="no_internet_connection">There is not an internet connection</string>
+    <string name="turn_on_internet_connection">Turn on the internet connection</string>
+    <string name="turn_on_location">Turn on location services</string>
+    <string name="downloaded">Downloaded</string>
+    <string name="download_error">Error in data download</string>
+    <string name="preparing_data_open">Preparing of data open</string>
+    <string name="ready_for_download">Ready</string>
+    <string name="error_data_download">"Unable to download data. Try again. "</string>
+    <string name="tracks">Tracks and positions</string>
+    <string name="local_track">Local track</string>
+    <string name="searchers_positions">Last position of searchers</string>
+    <string name="searchers_tracks">Tracks of searchers</string>
+    <string name="not_connected">Not connected, can not get location information</string>
+    <string name="preparing_data_wait">Preparing data. May take some time.</string>
+    <string name="less_than_two_positions">There are less than two postions in the log</string>
+    <string name="problem_to_create_log">Problems with log creation.</string>
+    <string name="downloading_wait">Downloading data. May take some time.</string>
+    <string name="this_device">This device</string>
+    <string name="can_not_open_activity">For this type of file is not browser available. Please install some.</string>
+    <string name="messages_list_title">List of messagess</string>
+    <string name="messages_no_attachment">Without attachment</string>
+    <string name="sent_messages_list_title">List of sended messagess</string>
+    <string name="message_when">When</string>
+    <string name="message">Message</string>
+    <string name="message_attachment_was_not_uploaded">Message has been sent, but the attchemnt was not uploaded. Possiblereasons: server error, security risk.</string>
+    <string name="message_attachment_name">Attachment title</string>
+    <string name="message_attachment_placement">Location</string>
+    <string name="message_was_sent">has been sent</string>
+    <string name="message_was_not_sent">has not been sent</string>
+    <string name="message_not_connected">Not connected. Can not sent message.</string>
+    <string name="message_no_recipient">The recipient is not selected. Can not send the message.</string>
+    <string name="pref_header_general">General</string>
+    <string name="pref_title_social_recommendations">Allow to donwload messages</string>
+    <string name="pref_description_social_recommendations">Allow to donwload messages</string>
+    <string name="pref_title_display_name">Name</string>
+    <string name="pref_default_display_name">John Doe</string>
+    <string name="pref_title_searchid">Search identifier</string>
+    <string name="pref_title_scan_searchid">Scan identifier from QR code</string>
+    <string name="pref_scan_searchid">Scan identifier from QR code</string>
+    <string name="pref_summary_scan_searchid">QR scan</string>
+    <string name="pref_title_systemid">System identifier</string>
+    <string name="pref_scanner_not_found">QR code scanned was not found</string>
+    <string name="pref_scanner_not_found_download">Download scanner?</string>
+    <string name="pref_scanner_not_found_download_yes">Yes</string>
+    <string name="pref_scanner_not_found_download_no">No</string>
+    <string name="pref_scanner_identifier">Identifier</string>
+    <string name="pref_scanner_format">Format</string>
+    <string name="pref_title_add_friends_to_messages">Download messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>If it is possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+    <string name="pref_header_data_sync">Synchronization</string>
+    <string name="pref_title_endpoint">Server address</string>
+    <string name="pref_title_sync_frequency">Frequency of messagess download</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>30 second</item>
+        <item>1 minute</item>
+        <item>5 minutes</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>30</item>
+        <item>60</item>
+        <item>300</item>
+    </string-array>
+    <string name="pref_title_sync_frequency_gps">Frequency of location logging</string>
+    <string-array name="pref_sync_frequency_gps_titles">
+        <item>5 second</item>
+        <item>10 second</item>
+        <item>30 second</item>
+        <item>1 minute</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_gps_values">
+        <item>5</item>
+        <item>10</item>
+        <item>30</item>
+        <item>60</item>
+    </string-array>
+    <string name="pref_title_system_sync_settings">Synchronization settings</string>
+    <string name="pref_header_notifications">Notification</string>
+    <string name="pref_title_new_message_notifications">Notification of a new message</string>
+    <string name="pref_title_ringtone">Sound</string>
+    <string name="pref_ringtone_silent">Tranquility</string>
+    <string name="pref_title_vibrate">Vibration</string>
+    <string name="title_activity_maps">Maps</string>
+    <string name="title_activity_message_send">Messages</string>
+    <string name="message_send">Send</string>
+    <string name="message_attachment">Attachment</string>
+    <string name="message_attachment_was_append">has been added</string>
+    <string name="message_attachment_select">Select and attachment</string>
+    <string name="message_attachment_can_not_be_zero_length">can not have zero size</string>
+    <string name="message_attachment_is_too_big">must be smaller than 10 MB</string>
+    <string name="coordinator">Coordinator</string>
+    <string name="title_activity_call_on_duty">Current search</string>
+    <string name="activity_call_on_duty_description">You are requsted to join the search</string>
+    <string name="call_on_duty_selected">You have joined the search. If youare asked to come to search in place, you will obtain a message. Please wait.</string>
+    <string name="call_on_duty_not_selected">You have rejected to join the search. See you next time.</string>
+    <string name="on_duty">You have been asked to join the search in place. Your tracking has been activated automatically.</string>
+    <string name="mode_sleeping">Waiting for search</string>
+    <string name="mode_waiting">Waiting for call to join the search</string>
+    <string name="mode_selected">Waiting for confirmation of joining the search</string>
+    <string name="mode_ready_for_tracking">Waiting for call for join the search in place.</string>
+    <string name="mode_tracking">Tracking location</string>
+    <string name="error_unexpected">I am confused. I did not expect this. Better to restart me or the whole phone.</string>
+    <string name="buttonArrive">I can arrive until</string>
+    <string name="arrive60m">1 h</string>
+    <string name="arrive120m">2 h</string>
+    <string name="arrive180m">3 h</string>
+    <string name="arrive240m">4 h</string>
+    <string name="arrive300m">5 h</string>
+    <string name="arriveGt300m"><![CDATA[> 5 h]]></string>
+    <string name="buttonNotArrive">Can not arrive</string>
+    <string name="title_activity_log_acivity">Log</string>
+    <string name="log_send">Send</string>
+    <string name="log_save">Save</string>
+    <string name="log_saved">Log has been saved to:</string>
+    <string name="log_not_saved">Error when saving log</string>
+    <string name="not_implemented">Functionality not implemented yet</string>
+    <string name="no_location">Do not have location. Can not send location.</string>
+    <string name="no_searchid">Searchid is not set. Can not connect.</string>
+</resources>

@@ -17,16 +17,25 @@ public class LogHelper {
     }
 
     public static void i(String tag, String message) {
+        if (message == null) {
+            message = "null";
+        }
         Log.i(tag, message);
         logit("I: " + tag + ": " + message);
     }
 
     public static void e(String tag, String message) {
+        if (message == null) {
+            message = "null";
+        }
         Log.e(tag, message);
         logit("E: " + tag + ": " + message);
     }
 
     public static void w(String tag, String message) {
+        if (message == null) {
+            message = "null";
+        }
         Log.w(tag, message);
         logit("W: " + tag + ": " + message);
     }
@@ -39,6 +48,9 @@ public class LogHelper {
         stringBuilder.append(simpleDateFormat.format(new Date()));
         //stringBuilder.append(new Date("YYYY-MM-DD H:i:s"));
         stringBuilder.append(" ");
+        if (message == null) {
+            message = "null";
+        }
         stringBuilder.append(message);
         log = stringBuilder.toString();
     }

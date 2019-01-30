@@ -12,6 +12,7 @@ import java.net.URLConnection;
 
 import cz.vsb.gis.ruz76.patrac.android.R;
 import cz.vsb.gis.ruz76.patrac.android.activities.MainActivity;
+import cz.vsb.gis.ruz76.patrac.android.domain.Status;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
 
 /**
@@ -67,14 +68,9 @@ public class GetRequest extends AsyncTask<String, String, String> {
             /*if (textStatus != null) {
                 textStatus.setText(R.string.download_error);
             }*/
-            MainActivity.StatusMessages = e.getMessage();
+            cz.vsb.gis.ruz76.patrac.android.domain.Status.StatusMessages = e.getMessage();
             LogHelper.e("GetRequest: ", f_url[0] + " " + e.getMessage());
-            if (f_url[0].contains("getmessages")) {
-                MainActivity.readingMessage = false;
-            }
-            if (f_url[0].contains("sendlocation")) {
-                MainActivity.sendingLocation = false;
-            }
+            MainActivity.processingRequest = false;
             //cancel(true);
             return null;
         }

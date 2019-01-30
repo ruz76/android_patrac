@@ -17,13 +17,5 @@
 
 <resources>
     <string name="app_name">Pátrač</string>
-    <string name="intro_message">
-        <![CDATA[
-        
-            
-            Tato aplikace slouží pro monitoring pohybu pátračů pro účely štábu a pro komunikaci štábu s pátrači.
-            
-        
-        ]]>
-    </string>
+    <string name="intro_message">Tato aplikace slouží pro monitoring pohybu pátračů pro účely štábu a pro komunikaci štábu s pátrači.</string>
 </resources>
