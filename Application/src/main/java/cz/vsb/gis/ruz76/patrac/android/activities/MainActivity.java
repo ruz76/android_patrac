@@ -29,6 +29,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.text.method.ScrollingMovementMethod;
@@ -137,9 +138,22 @@ public class MainActivity extends Activity implements LocationListener, GetReque
     protected void onCreate(Bundle savedInstanceState) throws SecurityException {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_ACTION_BAR);
+        context = this.getApplicationContext();
 
         Calendar c = Calendar.getInstance();
-        Log.i("AlarmManager", String.valueOf(c.getTimeInMillis() + 10000));
+        Log.i("AlarmManager", String.valueOf(c.getTimeInMillis() + 120000));
+        Log.i("AlarmManager", String.valueOf(c.getTime()));
+
+        final int FIFTEEN_SEC_MILLIS = 15000;
+
+        Intent ll24 = new Intent(context, PositionReceiver.class);
+        //PendingIntent recurringLl24 = PendingIntent.getBroadcast(context, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0, ll24, 0);
+        AlarmManager alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        //alarms.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + FIFTEEN_SEC_MILLIS, FIFTEEN_SEC_MILLIS, recurringLl24);
+        int interval = 8000;
+        alarms.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntent);
+        Toast.makeText(this, "Alarm Set", Toast.LENGTH_SHORT).show();
 
         setPermissions();
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -147,7 +161,6 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         extractGuiItems();
         mDataText.setText(R.string.mode_sleeping);
         setSearchTimer();
-        context = this.getApplicationContext();
         notificator.setContext(context);
         Status.endPoint = sharedPrefs.getString("endpoint", getString(R.string.pref_default_endpoint));
         Status.sessionId = sharedPrefs.getString("sessionid", null);
@@ -158,11 +171,6 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         if (RequestMode.TRACKING == Status.mode) {
             connect();
         }
-
-        Intent ll24 = new Intent(context, PositionReceiver.class);
-        PendingIntent recurringLl24 = PendingIntent.getBroadcast(context, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarms.setRepeating(AlarmManager.RTC_WAKEUP, c.getTimeInMillis() + 10000, 60000, recurringLl24);
     }
 
     @Override

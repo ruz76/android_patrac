@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Date;
 
@@ -19,6 +20,7 @@ public class PositionReceiver extends BroadcastReceiver implements GetRequestUpd
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Toast.makeText(context, "I'm running", Toast.LENGTH_SHORT).show();
         Log.i("PositionReceiver", String.valueOf(new Date()));
         GetRequest getRequest = new GetRequest();
         getRequest.setActivity(this);
