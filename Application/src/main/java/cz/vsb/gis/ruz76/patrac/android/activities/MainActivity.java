@@ -19,6 +19,8 @@ package cz.vsb.gis.ruz76.patrac.android.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,6 +32,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,6 +48,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -61,6 +65,7 @@ import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
 import cz.vsb.gis.ruz76.patrac.android.helpers.LogHelper;
 import cz.vsb.gis.ruz76.patrac.android.helpers.Network;
 import cz.vsb.gis.ruz76.patrac.android.helpers.Notificator;
+import cz.vsb.gis.ruz76.patrac.android.receivers.PositionReceiver;
 
 /**
  * Main Activity.
@@ -132,6 +137,10 @@ public class MainActivity extends Activity implements LocationListener, GetReque
     protected void onCreate(Bundle savedInstanceState) throws SecurityException {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_ACTION_BAR);
+
+        Calendar c = Calendar.getInstance();
+        Log.i("AlarmManager", String.valueOf(c.getTimeInMillis() + 10000));
+
         setPermissions();
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         setContentView(R.layout.activity_main);
@@ -149,6 +158,11 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         if (RequestMode.TRACKING == Status.mode) {
             connect();
         }
+
+        Intent ll24 = new Intent(context, PositionReceiver.class);
+        PendingIntent recurringLl24 = PendingIntent.getBroadcast(context, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarms.setRepeating(AlarmManager.RTC_WAKEUP, c.getTimeInMillis() + 10000, 60000, recurringLl24);
     }
 
     @Override
@@ -166,6 +180,8 @@ public class MainActivity extends Activity implements LocationListener, GetReque
 
         // Restore state members from saved instance
         Status.restored = savedInstanceState.getInt("restored") + 1;
+        Calendar c = Calendar.getInstance();
+        Log.i("onRestoreInstanceState", String.valueOf(c.getTimeInMillis() + 1000));
     }
 
     private void setStatusTextAdapter() {
