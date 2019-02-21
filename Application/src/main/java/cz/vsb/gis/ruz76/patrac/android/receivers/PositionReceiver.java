@@ -6,8 +6,15 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.Date;
 
+import cz.vsb.gis.ruz76.patrac.android.activities.MainActivity;
 import cz.vsb.gis.ruz76.patrac.android.domain.Status;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequest;
 import cz.vsb.gis.ruz76.patrac.android.helpers.GetRequestUpdate;
@@ -27,15 +34,32 @@ public class PositionReceiver extends BroadcastReceiver implements GetRequestUpd
         if (url == null) {
             url = Status.endPoint;
         }
+        String response = null;
         LogHelper.i("PositionReceiver", String.valueOf(new Date()));
-        GetRequest getRequest = new GetRequest();
-        getRequest.setActivity(this);
+        GetIt getIt = new GetIt();
         if (url == null) {
             LogHelper.i("PositionReceiver", "URL is null");
-            getRequest.execute("http://gisak.vsb.cz/patrac/mserver.php?date=" + new Date());
+            try {
+                getIt.setUrl("http://gisak.vsb.cz/patrac/mserver.php?date=" + URLEncoder.encode(new Date().toString(), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         } else {
-            getRequest.execute(url + "date=" + new Date());
+            try {
+                getIt.setUrl(url + "date=" + URLEncoder.encode(new Date().toString(), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
+        getIt.run();
+        while(getIt.getResult() == null) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        LogHelper.i("PositionReceiverResponse", getIt.getResult());
     }
 
     @Override
@@ -43,11 +67,50 @@ public class PositionReceiver extends BroadcastReceiver implements GetRequestUpd
         LogHelper.i("PositionReceiverResponse", result);
     }
 
-    public String getUrl() {
-        return url;
-    }
+    private class GetIt implements Runnable {
 
-    public void setUrl(String url) {
-        this.url = url;
+        private String urlString;
+        private String result = null;
+
+        public void setUrl(String url) {
+            this.urlString = url;
+        }
+
+        public String getResult() {
+            return result;
+        }
+
+        @Override
+        public void run() {
+            int count;
+            try {
+                URL url = new URL(urlString);
+                URLConnection conection = url.openConnection();
+                conection.connect();
+                InputStream input = new BufferedInputStream(url.openStream(),8192);
+                StringBuilder stringBuilder = new StringBuilder();
+                byte data[] = new byte[1024];
+                long total = 0;
+                while ((count = input.read(data)) != -1) {
+                    total += count;
+                    String currentBufferString = new String(data, 0, count);
+                    stringBuilder.append(currentBufferString);
+                }
+                input.close();
+                result = stringBuilder.toString();
+
+            } catch (Exception e) {
+                //TODO show error cause exception from MapsActivity
+            /*if (textStatus != null) {
+                textStatus.setText(R.string.download_error);
+            }*/
+                cz.vsb.gis.ruz76.patrac.android.domain.Status.StatusMessages = e.getMessage();
+                LogHelper.e("GetRequest: ", urlString + " " + e.getMessage());
+                MainActivity.processingRequest = false;
+                //cancel(true);
+                e.printStackTrace();
+                result = "ERROR";
+            }
+        }
     }
 }
