@@ -21,14 +21,17 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -67,6 +70,7 @@ import cz.vsb.gis.ruz76.patrac.android.helpers.LogHelper;
 import cz.vsb.gis.ruz76.patrac.android.helpers.Network;
 import cz.vsb.gis.ruz76.patrac.android.helpers.Notificator;
 import cz.vsb.gis.ruz76.patrac.android.receivers.PositionReceiver;
+import cz.vsb.gis.ruz76.patrac.android.services.BackgroundService;
 
 /**
  * Main Activity.
@@ -74,6 +78,8 @@ import cz.vsb.gis.ruz76.patrac.android.receivers.PositionReceiver;
 public class MainActivity extends Activity implements LocationListener, GetRequestUpdate {
 
     private Menu menu;
+
+    public BackgroundService gpsService;
 
     public static boolean processingRequest = false;
 
@@ -140,6 +146,7 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         this.requestWindowFeature(Window.FEATURE_ACTION_BAR);
         context = this.getApplicationContext();
 
+        /*
         Calendar c = Calendar.getInstance();
         Log.i("AlarmManager", String.valueOf(c.getTimeInMillis() + 120000));
         Log.i("AlarmManager", String.valueOf(c.getTime()));
@@ -150,10 +157,12 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         //PendingIntent recurringLl24 = PendingIntent.getBroadcast(context, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0, ll24, 0);
         AlarmManager alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
         //alarms.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + FIFTEEN_SEC_MILLIS, FIFTEEN_SEC_MILLIS, recurringLl24);
         int interval = 8000;
         alarms.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntent);
         Toast.makeText(this, "Alarm Set", Toast.LENGTH_SHORT).show();
+        */
 
         setPermissions();
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -171,7 +180,27 @@ public class MainActivity extends Activity implements LocationListener, GetReque
         if (RequestMode.TRACKING == Status.mode) {
             connect();
         }
+
+        final Intent intent = new Intent(this.getApplicationContext(), BackgroundService.class);
+        startService(intent);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+
     }
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            String name = className.getClassName();
+            if (name.endsWith("BackgroundService")) {
+                gpsService = ((BackgroundService.LocationServiceBinder) service).getService();
+            }
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            if (className.getClassName().equals("BackgroundService")) {
+                gpsService = null;
+            }
+        }
+    };
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -226,12 +255,14 @@ public class MainActivity extends Activity implements LocationListener, GetReque
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.connect_disconnect_action:
+                gpsService.startTracking();
+                /*
                 if (!Status.connected) {
                     resetItems();
                     connect();
                 } else {
                     disconnect();
-                }
+                }*/
                 return true;
             case R.id.clear_action:
                 return startActivity(MainActivity.this, SettingsActivity.class);
